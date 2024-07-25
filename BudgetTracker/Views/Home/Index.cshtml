@@ -1,8 +1,24 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Login Page";
+  
+}
+@inject Microsoft.AspNetCore.Authentication.IAuthenticationService authenticationService
+
+@{
+    if (User.Identity.IsAuthenticated) // If the user is already authenticated, redirect to the User controller
+    {
+        <script>window.location.href = '@Url.Action("Index", "User")';</script>
+    }
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<form asp-controller="Home" asp-action="Create" method="get">
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Crear Usuario</button>
+    </div>        
+</form>
+
+<form asp-controller="Home" asp-action="Login" method="get">
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Iniciar Sesion</button>
+    </div>
+</form>
