@@ -1,12 +1,15 @@
 ﻿using BudgetTracker.Data;
+using BudgetTracker.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace BudgetTracker.Controllers
 {
+    [Authorize]
     public class UserController : Controller
     {
-
         private readonly BudgettrackerdbContext context;
 
         public UserController(BudgettrackerdbContext context)
@@ -17,7 +20,7 @@ namespace BudgetTracker.Controllers
         // GET: UserController
         public ActionResult Index()
         {
-            return View();
+            return View("Home");
         }
 
         public IActionResult GetUsers()
@@ -30,27 +33,6 @@ namespace BudgetTracker.Controllers
         public ActionResult Details(int id)
         {
             return View();
-        }
-
-        // GET: UserController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: UserController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
         }
 
         // GET: UserController/Edit/5

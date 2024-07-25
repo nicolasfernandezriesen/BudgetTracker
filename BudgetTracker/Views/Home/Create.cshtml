@@ -1,0 +1,31 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model User
+
+<h1>Crear usuario</h1>
+
+<div>
+    <form asp-controller="Home" asp-action="Create" method="post">
+        <div>
+            <label asp-for="UserName"></label>
+            <input asp-for="UserName" type="text" required />
+        </div>
+        <div>
+            <label asp-for="UserEmail"></label>
+            <input asp-for="UserEmail" type="email" required />
+        </div>
+        <div>
+            <label asp-for="UserPassword"></label>
+            <input asp-for="UserPassword" type="password" required />
+        </div>
+        <div>
+            <input type="submit" value="Crear usuario" />
+        </div>
+    </form>
+</div>
+
+@if (ViewBag.ErrorCreateUser == 1)
+{
+    <p>Error: @ViewBag.ErrorMessage</p>
+}
