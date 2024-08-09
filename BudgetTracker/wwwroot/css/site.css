@@ -1,11 +1,5 @@
 html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+  font-size: 0.8vmax;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
@@ -18,5 +12,21 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    background-color: #495057;
+}
+
+.btn-home {
+    border-radius: 7%;
+    transition: 0.55s;
+}
+
+.btn-home:hover {
+    opacity: 0.7;
+}
+
+.from-create-user {
+    height: auto;
+    width: 700px;
+    font-size: 1vmax;
 }

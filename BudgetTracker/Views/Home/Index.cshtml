@@ -1,7 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Login Page";
-  
 }
+
 @inject Microsoft.AspNetCore.Authentication.IAuthenticationService authenticationService
 
 @{
@@ -11,14 +11,18 @@
     }
 }
 
-<form asp-controller="Home" asp-action="Create" method="get">
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">Crear Usuario</button>
-    </div>        
-</form>
+<div class="d-flex justify-content-center align-items-center" style="height: 50vh;">
+    <div class="border rounded box-shadow p-4 bg-secondary">
+        <form asp-controller="Home" asp-action="Create" method="get">
+            <div class="form-group">
+                <button type="submit" class="btn-home btn-primary btn-lg mb-3 mx-4" style="width: 12vh;">Crear Usuario</button>
+            </div>
+        </form>
 
-<form asp-controller="Home" asp-action="Login" method="get">
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">Iniciar Sesion</button>
+        <form asp-controller="Home" asp-action="Login" method="get">
+            <div class="form-group">
+                <button type="submit" class="btn-home btn-primary btn-lg mx-4" style="width: 12vh;">Iniciar Sesion</button>
+            </div>
+        </form>
     </div>
-</form>
+</div>

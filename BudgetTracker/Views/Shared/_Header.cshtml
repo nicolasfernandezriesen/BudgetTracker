@@ -1,39 +1,36 @@
 ﻿@if (User.Identity.IsAuthenticated) // If the user is already authenticated, redirect to the User controller
 {
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-lg navbar-light bg-secondary border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">BudgetTracker</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand" href="#">BudgetTracker</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Index">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="logout">Cerrar Sesion</a>
-                        </li>
-                    </ul>
+                <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
+                    <div class="navbar-nav">
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Menu
+                            </a>
+                            <ul class="dropdown-menu bg-secondary dropdown-menu-lg-end" aria-labelledby="navbarDropdownMenuLink">
+                                <li><a class="dropdown-item" asp-controller="Home" asp-action="Index">Inicio</a></li>
+                                <li><a class="dropdown-item" asp-controller="Home" asp-action="logout">Cerrar Sesion</a></li>
+                                <li><a class="dropdown-item" asp-controller="Home" asp-action="logout">Something else here</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
-} else
- {
+}
+else
+{
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">BudgetTracker</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-secondary justify-content-center border-bottom box-shadow mb-3">
+            <div class="">
+                <p class="navbar-brand">Bienvenido a <strong>BudgetTracker</strong>. Puede usar la cuenta test@test.com para hacer tus pruebas si quiere no crear una.</p>       
             </div>
         </nav>
     </header>

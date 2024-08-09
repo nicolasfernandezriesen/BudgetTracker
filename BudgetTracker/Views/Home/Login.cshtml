@@ -3,23 +3,47 @@
 *@
 @model User
 
-<h1>Login</h1>
+<div class="d-flex flex-column justify-content-center align-items-center" style="height: 50vh;">
 
-<form asp-controller="Home" asp-action="Login" method="post">
-    <div class="form-group">
-        <label asp-for="UserEmail"></label>
-        <input type="email" asp-for="UserEmail" class="form-control" required />
-        <span asp-validation-for="UserEmail" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="UserPassword"></label>
-        <input type="password" asp-for="UserPassword" class="form-control" required />
-        <span asp-validation-for="UserPassword" class="text-danger"></span>
-    </div>
-    <button type="submit" class="btn btn-primary">Login</button>
-</form>
+    <h1 class="m-4">Login</h1>
 
-@if(@ViewBag.ErrorLogin == 1)
+    <div class="border rounded box-shadow p-4 bg-secondary" style="max-width: 75%;">
+        <div class="from-create-user">
+            <form asp-controller="Home" class="container" asp-action="Login" method="post">
+                <div class="row mb-3">
+                    <label asp-for="UserEmail" class="col-sm-3 col-form-label">Email:</label>
+                    <div class="col-sm-9">
+                        <input asp-for="UserEmail" type="email" class="form-control" required>
+                        <span asp-validation-for="UserEmail" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label asp-for="UserPassword" class="col-sm-3 col-form-label">Contraseña:</label>
+                    <div class="col-sm-9">
+                        <input asp-for="UserPassword" type="password" class="form-control" required>
+                        <span asp-validation-for="UserPassword" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-5 text-start">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1.1vw" height="1.1vw" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16">
+                                <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z" />
+                            </svg>
+                        </a>
+                    </div>
+                    <div class="col-sm-7 text-start">
+                        <button type="submit" class="btn btn-primary">Iniciar Sesion</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+@if (@ViewBag.ErrorLogin == 1)
 {
-    <p>Error: @ViewBag.ErrorMessage</p>
+    <div class="border rounded box-shadow p-3 m-2  bg-danger text-warning">
+        <p>Error: @ViewBag.ErrorMessage</p>
+    </div>
 }
