@@ -31,7 +31,7 @@ namespace BudgetTracker.Controllers
         // POST: UserController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(User newUser)
+        public async Task<IActionResult> Create(User newUser)
         {
             ViewBag.ErrorCreateUser = 0;
             int userNameOrEmailExists = 0;
@@ -62,7 +62,22 @@ namespace BudgetTracker.Controllers
                 context.Users.Add(newUser);
                 context.SaveChanges();
 
-                return RedirectToAction("Login", "User");
+                var claims = new List<Claim>
+                {
+                new Claim(ClaimTypes.Name, newUser.UserName),
+                new Claim(ClaimTypes.Email, newUser.UserEmail)
+                };
+
+                // Crear una identidad de usuario
+                var userIdentity = new ClaimsIdentity(claims, "userLoged");
+
+                // Crear un principal de usuario
+                var userPrincipal = new ClaimsPrincipal(userIdentity);
+
+                // Agregar la cookie de validación a la respuesta
+                await HttpContext.SignInAsync(userPrincipal);
+
+                return RedirectToAction("Index", "User");
             }
             catch
             {
