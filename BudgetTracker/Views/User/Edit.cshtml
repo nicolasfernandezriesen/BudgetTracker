@@ -1,0 +1,35 @@
+﻿@model BudgetTracker.Models.User
+@section Scripts {
+    <script src="~/js/User/Edit.js"></script>
+}
+
+<h1>Edit User</h1>
+
+<form id="editUserForm" asp-controller="User" asp-action="Edit" method="post">
+    <div>
+        <label>Elije un campo para editar</label>
+        <select id="editOptions" class="form-control">
+            <option value="">-- Click aqui para selecionar una opcion --</option>
+            <option value="UserName">Nombre de usuario</option>
+            <option value="UserEmail">Email</option>
+            <option value="UserPassword">Contraseña</option>
+        </select>
+    </div>
+
+    <div id="UserNameSection" class="edit-section" style="display:none;">
+        <label asp-for="UserName"></label>
+        <input id="userName" asp-for="UserName" type="text" class="form-control" />
+    </div>
+
+    <div id="UserEmailSection" class="edit-section" style="display:none;">
+        <label asp-for="UserEmail"></label>
+        <input id="userEmail" asp-for="UserEmail" type="email" class="form-control" />
+    </div>
+
+    <div id="UserPasswordSection" class="edit-section" style="display:none;">
+        <label asp-for="UserPassword"></label>
+        <input id="userPassword" asp-for="UserPassword" type="password" class="form-control" />
+    </div>
+
+    <button type="button" class="btn btn-primary" id="submitBtn" onclick="sendEditUser()" style="display:none;">Guardar</button>
+</form>

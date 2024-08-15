@@ -1,4 +1,31 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿function showSuccessAlert(title, text) {
+    return Swal.fire({
+        title: title || '¡Éxito!',
+        text: text || 'Operación realizada correctamente.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+    });
+};
 
-// Write your JavaScript code.
+function showLoadingAlert(title, text) {
+    return Swal.fire({
+        title: title || 'Cargando...',
+        text: text || 'Por favor, espera un momento.',
+        didOpen: () => {
+            Swal.showLoading();
+        },
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        showCancelButton: false,
+    });
+};
+
+function showErrorAlert(title, text) {
+    return Swal.fire({
+        title: title || 'Error',
+        text: text || 'Hubo un problema con la operación.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+    });
+};

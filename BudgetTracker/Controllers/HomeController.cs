@@ -1,9 +1,13 @@
 using BudgetTracker.Data;
 using BudgetTracker.Models;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Scaffolding.Shared;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace BudgetTracker.Controllers
 {
@@ -11,11 +15,41 @@ namespace BudgetTracker.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly BudgettrackerdbContext context;
+        private readonly IDataProtector _protector;
 
-        public HomeController(ILogger<HomeController> logger, BudgettrackerdbContext context)
+        public HomeController(ILogger<HomeController> logger, BudgettrackerdbContext context, IDataProtectionProvider provider)
         {
             _logger = logger;
             this.context = context;
+            _protector = provider.CreateProtector("UserIdProtector");
+        }
+
+        private ClaimsPrincipal CreateCookies (User user)
+        {
+            // Encrypt the user ID
+            var encryptedUserId = _protector.Protect(user.UserId.ToString());
+
+            // Create a cookie with the encrypted user ID
+            Response.Cookies.Append("userId", encryptedUserId, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                Expires = DateTimeOffset.UtcNow.AddDays(7)
+            });
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Email, user.UserEmail)
+            };
+
+            // Create a user identity
+            var userIdentity = new ClaimsIdentity(claims, "userLoged");
+
+            // Create a user principal
+            var userPrincipal = new ClaimsPrincipal(userIdentity);
+
+            return userPrincipal;
         }
 
         public IActionResult Index()
@@ -56,32 +90,22 @@ namespace BudgetTracker.Controllers
 
                 if (userNameOrEmailExists > 0)
                 {
-                    return View();
-                }
+                    return Conflict();
+                };
 
                 context.Users.Add(newUser);
                 context.SaveChanges();
 
-                var claims = new List<Claim>
-                {
-                new Claim(ClaimTypes.Name, newUser.UserName),
-                new Claim(ClaimTypes.Email, newUser.UserEmail)
-                };
+                var userPrincipal = CreateCookies(newUser);
 
-                // Crear una identidad de usuario
-                var userIdentity = new ClaimsIdentity(claims, "userLoged");
-
-                // Crear un principal de usuario
-                var userPrincipal = new ClaimsPrincipal(userIdentity);
-
-                // Agregar la cookie de validación a la respuesta
+                // Add the validation cookie to the response
                 await HttpContext.SignInAsync(userPrincipal);
 
-                return RedirectToAction("Index", "User");
+                return Ok(new { Message = "Usuario registrado exitosamente." });
             }
             catch
             {
-                return View();
+                return BadRequest(new { Message = "Ocurrio un error inesperado."});
             }
         }
 
@@ -103,30 +127,21 @@ namespace BudgetTracker.Controllers
             {
                 ViewBag.ErrorLogin = 1;
                 ViewBag.ErrorMessage = "Usuario o contraseña incorrectos";
-                return View();
-            }
-
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email, user.UserEmail)
+                return BadRequest(new { Message = "Credenciales invalidas." });
             };
 
-            // Crear una identidad de usuario
-            var userIdentity = new ClaimsIdentity(claims, "userLoged");
+            var userPrincipal = CreateCookies(user);
 
-            // Crear un principal de usuario
-            var userPrincipal = new ClaimsPrincipal(userIdentity);
-
-            // Agregar la cookie de validación a la respuesta
+            // Add the validation cookie to the response
             await HttpContext.SignInAsync(userPrincipal);
 
-            return RedirectToAction("Index", "User");
+            return Ok("Credenciales verificada");
         }
 
         // GET: HomeController/Logout
         public async Task<IActionResult> Logout()
         {
+            Response.Cookies.Delete("userId");
             await HttpContext.SignOutAsync();
             return RedirectToAction("Index");
         }

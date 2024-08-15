@@ -1,7 +1,4 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@model User
+﻿@model User
 
 <div class="d-flex flex-column justify-content-center align-items-center" style="height: 50vh;">
 
@@ -9,7 +6,7 @@
 
     <div class="border rounded box-shadow p-4 bg-secondary" style="max-width: 75%;">
         <div class="from-create-user">
-            <form asp-controller="Home" class="container" asp-action="Login" method="post">
+            <form id="loginUserForm" asp-controller="Home" class="container" asp-action="Login" method="post">
                 <div class="row mb-3">
                     <label asp-for="UserEmail" class="col-sm-3 col-form-label">Email:</label>
                     <div class="col-sm-9">
@@ -34,7 +31,7 @@
                         </a>
                     </div>
                     <div class="col-sm-7 text-start">
-                        <button type="submit" class="btn btn-primary">Iniciar Sesion</button>
+                        <button type="button" class="btn btn-primary" onclick="LoginUser()">Iniciar Sesion</button>
                     </div>
                 </div>
             </form>
@@ -46,4 +43,8 @@
     <div class="border rounded box-shadow p-3 m-2  bg-danger text-warning">
         <p>Error: @ViewBag.ErrorMessage</p>
     </div>
+}
+
+@section Scripts {
+        <script src="~/js/Home/Login.js"></script>
 }

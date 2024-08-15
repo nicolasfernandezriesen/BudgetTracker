@@ -11,7 +11,7 @@
 
     <div class="border rounded box-shadow p-4 bg-secondary" style="max-width: 75%;">
         <div class="from-create-user">
-            <form asp-controller="Home" class="container" asp-action="Create" method="post">
+            <form id="createUserForm" asp-controller="Home" class="container" asp-action="Create" method="post">
                 <div class="row mb-3">
                     <label asp-for="UserName" class="col-sm-3 col-form-label">Usuario:</label>
                     <div class="col-sm-9">
@@ -42,7 +42,7 @@
                         </a>
                     </div>
                     <div class="col-sm-7 text-start">
-                        <button type="submit" class="btn btn-primary">Crear usuario</button>
+                        <button type="button" class="btn btn-primary" onclick="CreateUser()">Crear usuario</button>
                     </div>
                 </div>
             </form>
@@ -56,3 +56,7 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script src="~/js/Home/Create.js"></script>
+}

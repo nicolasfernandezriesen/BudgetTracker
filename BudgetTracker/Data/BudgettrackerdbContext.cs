@@ -8,11 +8,11 @@ namespace BudgetTracker.Data;
 
 public partial class BudgettrackerdbContext : DbContext
 {
-    public BudgettrackerdbContext()
+    private readonly IConfiguration _configuration;
+    public BudgettrackerdbContext(IConfiguration configuration)
     {
+        _configuration = configuration;
     }
-
-    public BudgettrackerdbContext(DbContextOptions<BudgettrackerdbContext> options) : base(options) { }
 
     public virtual DbSet<Bill> Bills { get; set; }
 
@@ -25,8 +25,10 @@ public partial class BudgettrackerdbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=localhost;database=budgettrackerdb;user id=root;password=jameme29", ServerVersion.Parse("8.0.37-mysql"));
+    {
+        var connectionString = _configuration.GetConnectionString("DefaultConnection");
+        optionsBuilder.UseMySql(connectionString, ServerVersion.Parse("8.0.37-mysql"));
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
