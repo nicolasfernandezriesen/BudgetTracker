@@ -13,7 +13,10 @@
         });
 
         if (response.ok) {
-            await showSuccessAlert('Verificado', 'Te has logeado correctamente.');
+            showSuccessAlert('Verificado', 'Te has logeado correctamente.');
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            Swal.close();
 
             window.location.href = '/Home';
         } else {
