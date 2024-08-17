@@ -3,33 +3,49 @@
     <script src="~/js/User/Edit.js"></script>
 }
 
-<h1>Edit User</h1>
+<div class="d-flex flex-column justify-content-center align-items-center m-5">
 
-<form id="editUserForm" asp-controller="User" asp-action="Edit" method="post">
-    <div>
-        <label>Elije un campo para editar</label>
-        <select id="editOptions" class="form-control">
-            <option value="">-- Click aqui para selecionar una opcion --</option>
-            <option value="UserName">Nombre de usuario</option>
-            <option value="UserEmail">Email</option>
-            <option value="UserPassword">Contraseña</option>
-        </select>
+    <div class="d-flex justify-content-evenly align-items-center p-2" style="max-width: 75%; min-width: 50%;">
+        <a asp-controller="User" asp-action="Index" class="btn text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1.1vw" height="1.1vw" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16">
+                <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z" />
+            </svg>
+        </a>
+        <h1>Configuracion</h1>
     </div>
+    
+    <div class="bg-secondary border rounded box-shadow" style="max-width: 75%; min-width: 50%;">
+        <div class="d-flex flex-row justify-content-center align-items-center p-5">
+            <h3 class="mx-5">Configuracion de usuario</h3>
 
-    <div id="UserNameSection" class="edit-section" style="display:none;">
-        <label asp-for="UserName"></label>
-        <input id="userName" asp-for="UserName" type="text" class="form-control" />
+            <form id="editUserForm" asp-controller="User" asp-action="Edit" method="post">
+                <div class="p-2">
+                    <label class="pb-1">Elije un campo para editar</label>
+                    <select id="editOptions" class="form-control">
+                        <option value="">-- Click aqui para selecionar una opcion --</option>
+                        <option value="UserName">Nombre de usuario</option>
+                        <option value="UserEmail">Email</option>
+                        <option value="UserPassword">Contraseña</option>
+                    </select>
+
+                    <div id="UserNameSection" class="edit-section" style="display:none;">
+                        <label class="pt-2 pb-1" asp-for="UserName">Nuevo nombre de usuario</label>
+                        <input id="userName" asp-for="UserName" type="text" class="form-control" />
+                    </div>
+
+                    <div id="UserEmailSection" class="edit-section" style="display:none;">
+                        <label class="pt-2 pb-1" asp-for="UserEmail">Nuevo email</label>
+                        <input id="userEmail" asp-for="UserEmail" type="email" class="form-control" />
+                    </div>
+
+                    <div id="UserPasswordSection" class="edit-section" style="display:none;">
+                        <label class="pt-2 pb-1" asp-for="UserPassword">Nuwva contraseña</label>
+                        <input id="userPassword" asp-for="UserPassword" type="password" class="form-control" />
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-primary" id="submitBtn" onclick="sendEditUser()" style="display:none;">Guardar</button>
+            </form>
+        </div>
     </div>
-
-    <div id="UserEmailSection" class="edit-section" style="display:none;">
-        <label asp-for="UserEmail"></label>
-        <input id="userEmail" asp-for="UserEmail" type="email" class="form-control" />
-    </div>
-
-    <div id="UserPasswordSection" class="edit-section" style="display:none;">
-        <label asp-for="UserPassword"></label>
-        <input id="userPassword" asp-for="UserPassword" type="password" class="form-control" />
-    </div>
-
-    <button type="button" class="btn btn-primary" id="submitBtn" onclick="sendEditUser()" style="display:none;">Guardar</button>
-</form>
+</div>
