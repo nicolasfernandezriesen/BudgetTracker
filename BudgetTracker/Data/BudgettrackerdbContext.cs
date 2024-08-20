@@ -87,6 +87,7 @@ public partial class BudgettrackerdbContext : DbContext
             entity.ToTable("incomes");
 
             entity.HasIndex(e => e.UserId, "user_id");
+            entity.HasIndex(e => e.CategoryId, "incomes_ibfk_2_idx");
 
             entity.Property(e => e.IncomeId).HasColumnName("income_id");
             entity.Property(e => e.IncomeAmount)
@@ -97,11 +98,17 @@ public partial class BudgettrackerdbContext : DbContext
                 .HasMaxLength(250)
                 .HasColumnName("income_desc");
             entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.CategoryId).HasColumnName("category_id");
 
             entity.HasOne(d => d.User).WithMany(p => p.Incomes)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("incomes_ibfk_1");
+
+            entity.HasOne(d => d.Category).WithMany(p => p.Incomes)
+                .HasForeignKey(d => d.CategoryId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("incomes_ibfk_2");
         });
 
         modelBuilder.Entity<MonthlyTotal>(entity =>

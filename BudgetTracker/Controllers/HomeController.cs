@@ -52,11 +52,13 @@ namespace BudgetTracker.Controllers
             return userPrincipal;
         }
 
+        // GET: HomeController/Index
         public IActionResult Index()
         {
             return View();
         }
 
+        // GET: UserController/Create
         public IActionResult Create()
         {
             return View();

@@ -15,7 +15,7 @@
         if (response.ok) {
             await showSuccessAlert('¡Éxito!', 'Usuario creado correctamente.');
 
-            window.location.href = '/Home';
+            window.location.href = '/User';
         } else {
             throw new Error('Hubo un problema a la hora de crear el usuario. Vuelve a intentarlo.');
         }
