@@ -95,6 +95,14 @@ namespace BudgetTracker.Controllers
                     return Conflict();
                 };
 
+                // Check if the email is valid
+                if (!IsValidEmail(newUser.UserEmail))
+                {
+                    ViewBag.ErrorMessage += "El correo electrónico no es válido. ";
+                    ViewBag.ErrorCreateUser = 1;
+                    return BadRequest(new { Message = "El correo electrónico no es válido." });
+                }
+
                 context.Users.Add(newUser);
                 context.SaveChanges();
 
@@ -107,7 +115,21 @@ namespace BudgetTracker.Controllers
             }
             catch
             {
-                return BadRequest(new { Message = "Ocurrio un error inesperado."});
+                return BadRequest(new { Message = "Ocurrió un error inesperado." });
+            }
+        }
+
+        // Method to validate email
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
             }
         }
 

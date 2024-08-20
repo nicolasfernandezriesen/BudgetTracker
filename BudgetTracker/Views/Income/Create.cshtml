@@ -16,7 +16,7 @@
             <div class="p-2">
                 <div class="form-group text-center">
                     <label asp-for="Income.IncomeAmount" class="form-label pb-1">Monto del ingreso: </label><br />
-                    <input asp-for="Income.IncomeAmount" class="form-control text-center" type="number" style="max-width: 10vw; display:inline;" required  />
+                    <input asp-for="Income.IncomeAmount" class="form-control text-center" type="number" min="0" style="max-width: 10vw; display:inline;" required  />
                 </div>
                 <div class="form-group text-center">
                     <label asp-for="Income.CategoryId" class="form-label pt-2 pb-1">Categoria (Seleccionar uno): </label>

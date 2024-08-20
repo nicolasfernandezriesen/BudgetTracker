@@ -66,6 +66,11 @@ namespace BudgetTracker.Controllers
         {
             try
             {
+                if (!IsValidEmail(user.UserEmail))
+                {
+                    return BadRequest(new { Message = "El correo electrónico no es válido." });
+                }
+
                 int userId = GetUserID();
                 var existingUser = context.Users.Find(userId);
 
@@ -92,6 +97,19 @@ namespace BudgetTracker.Controllers
             catch
             {
                 return BadRequest();
+            }
+        }
+
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
             }
         }
 
