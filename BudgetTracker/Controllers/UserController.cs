@@ -3,8 +3,6 @@ using BudgetTracker.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.DotNet.Scaffolding.Shared;
-using System.Text.Json;
 
 namespace BudgetTracker.Controllers
 {
@@ -26,13 +24,14 @@ namespace BudgetTracker.Controllers
             return View("Home");
         }
 
+        // GET: UserController/GetUsers
         public IActionResult GetUsers()
         {
             var users = context.Users.ToList();
             return Ok(users);
         }
 
-        public int GetUserID()
+        private int GetUserID()
         {
             var encryptedUserId = Request.Cookies["UserId"];
             var stringId = _protector.Unprotect(encryptedUserId);

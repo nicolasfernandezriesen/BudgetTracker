@@ -18,7 +18,7 @@
             await new Promise(resolve => setTimeout(resolve, 1000));
             Swal.close();
 
-            window.location.href = '/Home';
+            window.location.href = '/User';
         } else {
             throw new Error('Credenciales no validas.');
         }

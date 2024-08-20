@@ -34,7 +34,7 @@ async function sendEditUser() {
         if (response.ok) {
             await showSuccessAlert("Guardado", "Los cambios se guardaron con exito.");
 
-            window.location.href = '/Home';
+            window.location.href = '/User';
         } else {
             throw new Error('Error al guardar los datos. Intentelo de nuevo.');
         }
