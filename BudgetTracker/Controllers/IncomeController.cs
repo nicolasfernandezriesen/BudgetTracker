@@ -69,10 +69,7 @@ namespace BudgetTracker.Controllers
         {
             try
             {
-                if(income.IncomeDate > DateOnly.FromDateTime(DateTime.Now))
-                {
-                    return BadRequest(new { message = "La fecha no puede ser en el futuro." });
-                }
+                CheckIsValid(income);
 
                 int userId = GetUserID();
 
@@ -81,11 +78,27 @@ namespace BudgetTracker.Controllers
                 context.Incomes.Add(income);
                 context.SaveChanges();
 
-                return Ok(new { message = "El nuevo ingreso se a guardado correctamente." });
+                return Ok(new { message = "El nuevo ingreso se ha guardado correctamente." });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception)
             {
                 return BadRequest();
+            }
+        }
+
+        private void CheckIsValid(Income income)
+        {
+            if (income.IncomeDate > DateOnly.FromDateTime(DateTime.Now))
+            {
+                throw new ArgumentException("La fecha no puede ser en el futuro.");
+            }
+            if (income.IncomeAmount <= 0)
+            {
+                throw new ArgumentException("El monto del ingreso debe ser mayor a 0.");
             }
         }
     }

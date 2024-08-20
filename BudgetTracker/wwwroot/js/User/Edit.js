@@ -17,6 +17,10 @@
     }
 });
 
+function checkValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
 async function sendEditUser() {
     const form = document.getElementById('editUserForm');
     const formData = new FormData(form);
@@ -25,7 +29,16 @@ async function sendEditUser() {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
+    const dataObject = {};
+    formData.forEach((value, key) => {
+        dataObject[key] = value;
+    });
+
     try {
+        if (!checkValidEmail(dataObject['UserEmail'])) {
+            throw new Error('El email no es valido.');
+        }
+
         const response = await fetch('/User/Edit', {
             method: 'POST',
             body: formData

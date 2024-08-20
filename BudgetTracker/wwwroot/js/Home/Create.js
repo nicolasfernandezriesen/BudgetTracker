@@ -1,4 +1,9 @@
-﻿async function CreateUser() {
+﻿function checkValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+async function CreateUser() {
     const form = document.getElementById('createUserForm');
     const formData = new FormData(form);
 
@@ -7,6 +12,10 @@
     await new Promise(resolve => setTimeout(resolve, 1000)); 
 
     try {
+        if (!checkValidEmail(dataObject['UserEmail'])) {
+            throw new Error('El email no es valido.');
+        }
+
         const response = await fetch('/Home/Create', {
             method: 'POST',
             body: formData
