@@ -1,4 +1,4 @@
-﻿function IsValidIncome(amount, date) {
+﻿function IsValidBill(amount, date) {
     if (amount === '' || amount < 0) {
         throw new Error('El monto no puede ser menor a 0.');
     }
@@ -18,13 +18,13 @@
     }
 }
 
-async function CreateIncome() {
-    const form = document.getElementById('createIncomeForm');
+async function CreateBill() {
+    const form = document.getElementById('createBillForm');
     const formData = new FormData(form);
 
-    const loadingSwal = showLoadingAlert('Creando ingreso');
+    const loadingSwal = showLoadingAlert('Creando gasto');
 
-    await new Promise(resolve => setTimeout(resolve, 1000)); 
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     const dataObject = {};
     formData.forEach((value, key) => {
@@ -32,9 +32,9 @@ async function CreateIncome() {
     });
 
     try {
-        IsValidIncome(dataObject['Income.IncomeAmount'], dataObject['Income.IncomeDate']);
+        IsValidBill(dataObject['Bill.BillsAmount'], dataObject['Bill.BillsDate']);
 
-        const response = await fetch('/Income/Create', {
+        const response = await fetch('/Bill/Create', {
             method: 'POST',
             body: formData
         });
