@@ -65,7 +65,7 @@ namespace BudgetTracker.Controllers
         // POST: IncomeController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind("IncomeDate,IncomeAmount,IncomeDesc,UserId,CategoryId")] Income income)
+        public ActionResult Create([Bind("IncomeDate,IncomeAmount,IncomeDesc,CategoryId")] Income income)
         {
             try
             {
