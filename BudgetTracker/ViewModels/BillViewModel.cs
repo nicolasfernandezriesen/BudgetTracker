@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using BudgetTracker.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace BudgetTracker.Models
+namespace BudgetTracker.ViewModels
 {
     public class BillViewModel
     {

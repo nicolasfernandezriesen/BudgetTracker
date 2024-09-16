@@ -1,5 +1,6 @@
 ﻿using BudgetTracker.Data;
 using BudgetTracker.Models;
+using BudgetTracker.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
@@ -20,12 +21,50 @@ namespace BudgetTracker.Controllers
             _protector = provider.CreateProtector("UserIdProtector");
         }
 
+        #region Functions
+
         private int GetUserID()
         {
             var encryptedUserId = Request.Cookies["UserId"];
             var stringId = _protector.Unprotect(encryptedUserId);
             return int.Parse(stringId);
         }
+
+        private void CheckIsValid(Income income)
+        {
+            if (income.IncomeDate > DateOnly.FromDateTime(DateTime.Now))
+            {
+                throw new ArgumentException("La fecha no puede ser en el futuro.");
+            }
+            if (income.IncomeAmount <= 0)
+            {
+                throw new ArgumentException("El monto del ingreso debe ser mayor a 0.");
+            }
+        }
+
+        private MonthlyTotal GetOrCreateMonthlyTotal(int month, int idUser)
+        {
+            var monthlyTotal = context.MonthlyTotals.FirstOrDefault(mt => mt.MonthlyTotalsMonth == month);
+
+            if (monthlyTotal == null)
+            {
+                monthlyTotal = new MonthlyTotal
+                {
+                    MonthlyTotalsYear = DateTime.Now.Year,
+                    MonthlyTotalsMonth = month,
+                    TotalIncome = 0,
+                    TotalBill = 0,
+                    UserId = idUser
+                };
+
+                context.MonthlyTotals.Add(monthlyTotal);
+                context.SaveChanges();
+            }
+
+            return monthlyTotal;
+        }
+
+        #endregion
 
         // GET: IncomeController
         public ActionResult Index()
@@ -75,6 +114,11 @@ namespace BudgetTracker.Controllers
 
                 income.UserId = userId;
 
+                var monthlyTotal = GetOrCreateMonthlyTotal(income.IncomeDate.Month, userId);
+
+                monthlyTotal.TotalIncome += income.IncomeAmount;
+
+                context.MonthlyTotals.Update(monthlyTotal);
                 context.Incomes.Add(income);
                 context.SaveChanges();
 
@@ -87,18 +131,6 @@ namespace BudgetTracker.Controllers
             catch (Exception)
             {
                 return BadRequest();
-            }
-        }
-
-        private void CheckIsValid(Income income)
-        {
-            if (income.IncomeDate > DateOnly.FromDateTime(DateTime.Now))
-            {
-                throw new ArgumentException("La fecha no puede ser en el futuro.");
-            }
-            if (income.IncomeAmount <= 0)
-            {
-                throw new ArgumentException("El monto del ingreso debe ser mayor a 0.");
             }
         }
     }
