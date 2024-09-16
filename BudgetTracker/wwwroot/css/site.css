@@ -30,3 +30,14 @@ body {
     width: 700px;
     font-size: 1vmax;
 }
+
+.btn-calendar {
+    color: #212529;
+    background-color: transparent;
+    border: hidden;
+    font-size: 1rem;
+}
+
+.btn-calendar:hover {
+    color: black;
+}

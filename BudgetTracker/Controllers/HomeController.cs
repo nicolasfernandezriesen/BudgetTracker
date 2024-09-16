@@ -1,10 +1,9 @@
 using BudgetTracker.Data;
 using BudgetTracker.Models;
+using BudgetTracker.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.DotNet.Scaffolding.Shared;
-using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Json;

@@ -1,0 +1,87 @@
+﻿@model BudgetTracker.ViewModels.DetailBillIncomeViewModel
+
+@if (Model.Bill != null )
+{
+    <divc lass="d-flex flex-column justify-content-center align-items-center">
+
+        <div class="d-flex justify-content-evenly align-items-center p-2">
+            <button onclick="goBackPage()" class="btn text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="1.1vw" height="1.1vw" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16">
+                    <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z" />
+                </svg>
+            </button>
+            <h1>Detalles de los gastos del dia @Model.Date</h1>
+        </div>
+
+        @foreach (var bill in Model.Bill)
+        {
+            <div class="d-flex flex-row justify-content-center align-items-center">
+                <div class="border  rounded box-shadow p-4 m-4 bg-secondary center" style="width: 80vw">
+                    <table class="table table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th style="width: 6vw">Categoria</th>
+                                <th style="width: 8.2vw">Gasto</th>
+                                <th>Descripcion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="width: 6vw">@bill.Category.CategoryName</td>
+                                <td style="width: 8.2vw">@bill.BillsAmount.ToString("C")</td>
+                                <td>@(bill.BillsDesc ?? "No hay descripcion alguna del gasto.")</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </divc>
+
+    <script src="~/js/History/History.js"></script>
+}
+else if (Model.Income != null)
+{
+    <divc lass="d-flex flex-column justify-content-center align-items-center">
+
+        <div class="d-flex justify-content-evenly align-items-center p-2">
+            <button onclick="goBackPage()" class="btn text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="1.1vw" height="1.1vw" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16">
+                    <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z" />
+                </svg>
+            </button>
+            <h1>Detalles de los ingresos del dia @Model.Date</h1>
+        </div>
+
+        @foreach (var income in Model.Income)
+        {
+          <div class="d-flex flex-row justify-content-center align-items-center">
+                <div class="border  rounded box-shadow p-4 m-4 bg-secondary center" style="width: 75vw">
+                    <table class="table table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th style="width: 6vw">Categoria</th>
+                                <th style="width: 8.2vw">Ingreso</th>
+                                <th>Descripcion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="width: 6vw">@income.Category.CategoryName</td>
+                                <td style="width: 8.2vw">@income.IncomeAmount.ToString("C")</td>
+                                <td>@(income.IncomeDesc ?? "No hay descripcion alguna sobre el ingreso.")</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+          </div>
+          
+        }
+    </divc>
+
+    <script src="~/js/History/History.js"></script>
+}
+else
+{
+    <p>UPPPSSSS...TRY AGAIN.</p>
+}

@@ -1,5 +1,6 @@
 ﻿using BudgetTracker.Data;
 using BudgetTracker.Models;
+using BudgetTracker.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
@@ -20,12 +21,50 @@ namespace BudgetTracker.Controllers
             _protector = provider.CreateProtector("UserIdProtector");
         }
 
+        #region Functions
+
         private int GetUserID()
         {
             var encryptedUserId = Request.Cookies["UserId"];
             var stringId = _protector.Unprotect(encryptedUserId);
             return int.Parse(stringId);
         }
+
+        private MonthlyTotal GetOrCreateMonthlyTotal(int month, int idUser)
+        {
+            var monthlyTotal = context.MonthlyTotals.FirstOrDefault(mt => mt.MonthlyTotalsMonth == month);
+
+            if (monthlyTotal == null)
+            {
+                monthlyTotal = new MonthlyTotal
+                {
+                    MonthlyTotalsYear = DateTime.Now.Year,
+                    MonthlyTotalsMonth = month,
+                    TotalIncome = 0,
+                    TotalBill = 0,
+                    UserId = idUser
+                };
+
+                context.MonthlyTotals.Add(monthlyTotal);
+                context.SaveChanges();
+            }
+
+            return monthlyTotal;
+        }
+
+        private void CheckIsValid(Bill bill)
+        {
+            if (bill.BillsDate > DateOnly.FromDateTime(DateTime.Now))
+            {
+                throw new ArgumentException("La fecha no puede ser en el futuro.");
+            }
+            if (bill.BillsAmount <= 0)
+            {
+                throw new ArgumentException("El monto del gasto debe ser mayor a 0.");
+            }
+        }
+
+        #endregion
 
         // GET: BillController
         public ActionResult Index()
@@ -72,7 +111,7 @@ namespace BudgetTracker.Controllers
         // POST: BillController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind("BillsDate,BillsAmount,BillDesc,CategoryId")] Bill bill)
+        public ActionResult Create([Bind("BillsDate,BillsAmount,BillsDesc,CategoryId")] Bill bill)
         {
             try
             {
@@ -82,6 +121,11 @@ namespace BudgetTracker.Controllers
 
                 bill.UserId = userId;
 
+                var monthlyTotal = GetOrCreateMonthlyTotal(bill.BillsDate.Month, userId);
+
+                monthlyTotal.TotalBill += bill.BillsAmount;
+
+                context.MonthlyTotals.Update(monthlyTotal);
                 context.Bills.Add(bill);
                 context.SaveChanges();
 
@@ -94,18 +138,6 @@ namespace BudgetTracker.Controllers
             catch (Exception)
             {
                 return BadRequest();
-            }
-        }
-
-        private void CheckIsValid(Bill bill)
-        {
-            if (bill.BillsDate > DateOnly.FromDateTime(DateTime.Now))
-            {
-                throw new ArgumentException("La fecha no puede ser en el futuro.");
-            }
-            if (bill.BillsAmount <= 0)
-            {
-                throw new ArgumentException("El monto del gasto debe ser mayor a 0.");
             }
         }
 

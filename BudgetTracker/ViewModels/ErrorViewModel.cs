@@ -1,4 +1,4 @@
-namespace BudgetTracker.Models
+namespace BudgetTracker.ViewModels
 {
     public class ErrorViewModel
     {

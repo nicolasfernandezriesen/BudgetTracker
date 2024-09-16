@@ -36,7 +36,7 @@ async function CreateBill() {
 
         const response = await fetch('/Bill/Create', {
             method: 'POST',
-            body: formData
+            body: formData,
         });
         const data = await response.json();
         if (response.ok) {

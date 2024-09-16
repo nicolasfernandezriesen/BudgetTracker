@@ -1,0 +1,140 @@
+﻿@model BudgetTracker.ViewModels.HistoryViewModel
+@{
+    var year = Model.MonthlyTotal?.MonthlyTotalsYear ?? DateTime.Now.Year;
+    var month = Model.MonthlyTotal?.MonthlyTotalsMonth ?? DateTime.Now.Month;
+
+    var firstDayOfMonth = new DateTime(year, month, 1);
+
+    var startDayOfWeek = (int)firstDayOfMonth.DayOfWeek - 1;
+    if (startDayOfWeek == -1) startDayOfWeek = 6;
+
+    var daysInMonth = DateTime.DaysInMonth(year, month);
+
+    var weeks = new List<List<DateTime?>>();
+    var currentWeek = new List<DateTime?>();
+
+    for (int i = 0; i < startDayOfWeek; i++)
+    {
+        currentWeek.Add(null);
+    }
+
+    for (int day = 1; day <= daysInMonth; day++)
+    {
+        currentWeek.Add(new DateTime(year, month, day));
+
+        if (currentWeek.Count == 7)
+        {
+            weeks.Add(currentWeek);
+            currentWeek = new List<DateTime?>();
+        }
+    }
+
+    while (currentWeek.Count < 7)
+    {
+        currentWeek.Add(null);
+    }
+    weeks.Add(currentWeek);
+
+    // Agroup incomes and bills by date
+    var incomeByDate = Model.Income.GroupBy(i => i.IncomeDate)
+                                   .ToDictionary(g => g.Key, g => g.ToList());
+
+    var billByDate = Model.Bill.GroupBy(b => b.BillsDate)
+                               .ToDictionary(g => g.Key, g => g.ToList());
+}
+
+<divc lass="d-flex flex-column justify-content-center align-items-center">
+
+    <div class="d-flex justify-content-evenly align-items-center p-2">
+        <a asp-controller="User" asp-action="Index" class="btn text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1.1vw" height="1.1vw" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16">
+                <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z" />
+            </svg>
+        </a>
+        <h1>Historial Mensual</h1>
+    </div>
+
+    <div class="border  rounded box-shadow m-4 bg-secondary center">
+        <div class="d-flex flex-column justify-content-center align-items-center p-5">
+            <h2>Calendario - @firstDayOfMonth.ToString("MMMM yyyy")</h2>
+
+            <div class="d-flex flex-row">
+                <p class="me-1">Ingresos totales del mes: @(Model.MonthlyTotal?.TotalIncome?.ToString("C") ?? "No hay ingresos.")</p>
+                <p class="ms-1">Gastos totales del mes: @(Model.MonthlyTotal?.TotalBill?.ToString("C") ?? "No hay gastos.")</p>
+            </div>
+
+            <table class="table table-bordered" style="width: 90vw">
+                <thead>
+                    <tr>
+                        <th>Lunes</th>
+                        <th>Martes</th>
+                        <th>Miércoles</th>
+                        <th>Jueves</th>
+                        <th>Viernes</th>
+                        <th>Sábado</th>
+                        <th>Domingo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var week in weeks)
+                    {
+                        <tr>
+                            @foreach (var day in week)
+                            {
+                                <td style="width: 12.8vw">
+                                    @if (day.HasValue)
+                                    {
+                                        <div class="d-flex flex-column">
+                                            <p class="text-center">@day.Value.Day</p>
+                                        </div>
+                                        var dayAsDateOnly = DateOnly.FromDateTime(day.Value);
+
+                                        <ul>
+                                            @if (incomeByDate.ContainsKey(dayAsDateOnly))
+                                            {
+                                                decimal totalIncome = 0;
+                                                @foreach (var income in incomeByDate[dayAsDateOnly])
+                                                {
+                                                    totalIncome += (decimal)income.IncomeAmount;
+                                                }
+
+                                                <li>
+                                                    <form asp-controller="History" asp-action="GetDetails">
+                                                        <input type="hidden" name="selectedDate" value="@dayAsDateOnly.ToString()" />
+                                                        <input type="hidden" name="typeDetail" value="income" />
+                                                        <button type="submit" class="btn-calendar">
+                                                            Ingresos: @totalIncome.ToString("C")
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            }
+
+                                            @if (billByDate.ContainsKey(dayAsDateOnly))
+                                            {
+                                                decimal totalBill = 0;
+                                                @foreach (var bill in billByDate[dayAsDateOnly])
+                                                {
+                                                    totalBill += (decimal)bill.BillsAmount;
+                                                }
+
+                                                <li>
+                                                    <form asp-controller="History" asp-action="GetDetails">
+                                                        <input type="hidden" name="selectedDate" value="@dayAsDateOnly.ToString()" />
+                                                        <input type="hidden" name="typeDetail" value="bill" />
+                                                        <button type="submit" class="btn-calendar">
+                                                            Gastos: @totalBill.ToString("C")
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            }
+                                        </ul>         
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</divc>
