@@ -18,11 +18,11 @@
     }
 }
 
-async function CreateBill() {
-    const form = document.getElementById('createBillForm');
+async function SaveEdit() {
+    const form = document.getElementById('editBillForm');
     const formData = new FormData(form);
 
-    const loadingSwal = showLoadingAlert('Creando gasto');
+    const loadingSwal = showLoadingAlert('Guardando gasto');
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -31,18 +31,21 @@ async function CreateBill() {
         dataObject[key] = value;
     });
 
+
     try {
         IsValidBill(dataObject['amount'], dataObject['date']);
 
-        const response = await fetch('/Bill/Create', {
+        const response = await fetch('/Bill/Edit', {
             method: 'POST',
-            body: formData,
+            body: formData
         });
+
         const data = await response.json();
 
         if (response.ok) {
-            await showSuccessAlert('¡Éxito!', data.message);
-            window.location.href = '/User';
+            await showSuccessAlert("Guardado", data.message);
+
+            window.location.href = `/Bill/Details/?selectedDate=${dataObject['date']}`;
         } else {
             throw new Error(data.message);
         }
@@ -51,4 +54,12 @@ async function CreateBill() {
     } finally {
         Swal.close();
     }
+}
+
+function Cancel() {
+    var billDateElement = document.getElementById('billDate');
+    var billDate = billDateElement.getAttribute('data-bill-date');
+    var date = new Date(Date.parse(billDate));
+
+    window.location.href = `/Bill/Details/?selectedDate=${billDate}`;
 }

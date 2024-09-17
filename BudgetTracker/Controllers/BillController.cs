@@ -52,13 +52,13 @@ namespace BudgetTracker.Controllers
             return monthlyTotal;
         }
 
-        private void CheckIsValid(Bill bill)
+        private void CheckIsValid(int amount, DateOnly date)
         {
-            if (bill.BillsDate > DateOnly.FromDateTime(DateTime.Now))
+            if (date > DateOnly.FromDateTime(DateTime.Now))
             {
                 throw new ArgumentException("La fecha no puede ser en el futuro.");
             }
-            if (bill.BillsAmount <= 0)
+            if (amount <= 0)
             {
                 throw new ArgumentException("El monto del gasto debe ser mayor a 0.");
             }
@@ -72,10 +72,36 @@ namespace BudgetTracker.Controllers
             return View();
         }
 
-        // GET: BillController/Details/5
-        public ActionResult Details(int id)
+        // GET: BillController/Details/"5/9/2024"
+        public async Task<IActionResult> Details(string selectedDate)
         {
-            return View();
+            try
+            {
+                var idUser = GetUserID();
+
+                DateOnly dateToSearch = DateOnly.Parse(selectedDate);
+
+                DetailBillIncomeViewModel detailBillIncomeViewModel = new DetailBillIncomeViewModel { };
+
+                var bill = await context.Bills
+                    .Include(b => b.Category)
+                    .Where(b => b.BillsDate == dateToSearch && b.UserId == idUser)
+                    .ToListAsync();
+
+                if (bill == null)
+                {
+                    return BadRequest(new { message = "The bill/s does not exist." });
+                }
+
+                detailBillIncomeViewModel.Bill = bill;
+                detailBillIncomeViewModel.Date = dateToSearch;
+
+                return View("Details", detailBillIncomeViewModel);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         // GET: BillController/Create
@@ -111,13 +137,22 @@ namespace BudgetTracker.Controllers
         // POST: BillController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind("BillsDate,BillsAmount,BillsDesc,CategoryId")] Bill bill)
+        public ActionResult Create(int amount, int categoryId, string desc, DateOnly date)
         {
             try
             {
-                CheckIsValid(bill);
+                CheckIsValid(amount, date);
 
                 int userId = GetUserID();
+
+                var bill = new Bill
+                {
+                    UserId = userId,
+                    BillsAmount = amount,
+                    BillsDesc = desc,
+                    BillsDate = date,
+                    CategoryId = categoryId
+                };
 
                 bill.UserId = userId;
 
@@ -142,23 +177,79 @@ namespace BudgetTracker.Controllers
         }
 
         // GET: BillController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: BillController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<IActionResult> Edit(int id, string selectedDate)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                int userId = GetUserID();
+                DateOnly date = DateOnly.Parse(selectedDate);
+
+                var categories = await context.Categorys
+                .Select(c => new SelectListItem
+                {
+                    Value = c.CategoryId.ToString(),
+                    Text = c.CategoryName
+                }).ToListAsync();
+
+                var bill = context.Bills
+                    .FirstOrDefault(b => b.BillsId == id && b.UserId == userId && b.BillsDate == date);
+
+                if (bill == null) {
+                    return BadRequest(new { message = "The bill does not exist." });
+                }
+
+                var viewModel = new BillViewModel
+                {
+                    Bill = bill,
+                    Categories = categories
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // POST: BillController/Edit?selectedDate=8/9/2024
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int amount, int categoryId, string desc, DateOnly date, int id)
+        {
+            try
+            {
+                CheckIsValid(amount, date);
+
+                int userId = GetUserID();
+
+                var bill = await context.Bills
+                    .FirstOrDefaultAsync(b => b.UserId == userId && b.BillsId == id);
+
+                if (bill == null)
+                {
+                    return BadRequest(new { message = "No se encontro el gasto." });
+                }
+
+                bill.BillsAmount = amount;
+                bill.BillsDesc = desc;
+                bill.BillsDate = date;
+                bill.CategoryId = categoryId;
+
+                var monthlyTotal = GetOrCreateMonthlyTotal(bill.BillsDate.Month, userId);
+
+                monthlyTotal.TotalBill -= bill.BillsAmount;
+
+                context.MonthlyTotals.Update(monthlyTotal);
+                context.Bills.Update(bill);
+                await context.SaveChangesAsync();
+
+                return Ok(new { message = "El gasto se ha actualizado correctamente." });
+
             }
             catch
             {
-                return View();
+                return BadRequest();
             }
         }
 
