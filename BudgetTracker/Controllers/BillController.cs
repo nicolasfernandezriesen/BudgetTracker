@@ -129,7 +129,6 @@ namespace BudgetTracker.Controllers
             }
             catch (Exception)
             {
-
                 return BadRequest();
             }
         }
@@ -170,9 +169,9 @@ namespace BudgetTracker.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
 
@@ -247,9 +246,9 @@ namespace BudgetTracker.Controllers
                 return Ok(new { message = "El gasto se ha actualizado correctamente." });
 
             }
-            catch
+            catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
 

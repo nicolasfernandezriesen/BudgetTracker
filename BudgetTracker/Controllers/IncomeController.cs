@@ -30,13 +30,13 @@ namespace BudgetTracker.Controllers
             return int.Parse(stringId);
         }
 
-        private void CheckIsValid(Income income)
+        private void CheckIsValid(int amount, DateOnly date)
         {
-            if (income.IncomeDate > DateOnly.FromDateTime(DateTime.Now))
+            if (date > DateOnly.FromDateTime(DateTime.Now))
             {
                 throw new ArgumentException("La fecha no puede ser en el futuro.");
             }
-            if (income.IncomeAmount <= 0)
+            if (amount <= 0)
             {
                 throw new ArgumentException("El monto del ingreso debe ser mayor a 0.");
             }
@@ -136,15 +136,22 @@ namespace BudgetTracker.Controllers
         // POST: IncomeController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind("IncomeDate,IncomeAmount,IncomeDesc,CategoryId")] Income income)
+        public ActionResult Create(int amount, int categoryId, string desc, DateOnly date)
         {
             try
             {
-                CheckIsValid(income);
+                CheckIsValid(amount, date);
 
                 int userId = GetUserID();
 
-                income.UserId = userId;
+                var income = new Income
+                {
+                    IncomeAmount = amount,
+                    CategoryId = categoryId,
+                    IncomeDesc = desc,
+                    IncomeDate = date,
+                    UserId = userId
+                };
 
                 var monthlyTotal = GetOrCreateMonthlyTotal(income.IncomeDate.Month, userId);
 
@@ -160,9 +167,9 @@ namespace BudgetTracker.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
 
