@@ -32,19 +32,21 @@ async function CreateIncome() {
     });
 
     try {
-        IsValidIncome(dataObject['Income.IncomeAmount'], dataObject['Income.IncomeDate']);
+        IsValidIncome(dataObject['amount'], dataObject['date']);
 
         const response = await fetch('/Income/Create', {
             method: 'POST',
             body: formData
         });
+
         const data = await response.json();
+
         if (response.ok) {
             await showSuccessAlert('¡Éxito!', data.message);
             window.location.href = '/User';
         } else {
             throw new Error(data.message);
-        }
+        }  
     } catch (error) {
         await showErrorAlert("Error", error.message);
     } finally {
