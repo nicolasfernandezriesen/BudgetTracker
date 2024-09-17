@@ -99,9 +99,8 @@
                                                 }
 
                                                 <li>
-                                                    <form asp-controller="History" asp-action="GetDetails">
+                                                    <form asp-controller="Income" asp-action="Details">
                                                         <input type="hidden" name="selectedDate" value="@dayAsDateOnly.ToString()" />
-                                                        <input type="hidden" name="typeDetail" value="income" />
                                                         <button type="submit" class="btn-calendar">
                                                             Ingresos: @totalIncome.ToString("C")
                                                         </button>
@@ -118,9 +117,8 @@
                                                 }
 
                                                 <li>
-                                                    <form asp-controller="History" asp-action="GetDetails">
+                                                    <form asp-controller="Bill" asp-action="Details">
                                                         <input type="hidden" name="selectedDate" value="@dayAsDateOnly.ToString()" />
-                                                        <input type="hidden" name="typeDetail" value="bill" />
                                                         <button type="submit" class="btn-calendar">
                                                             Gastos: @totalBill.ToString("C")
                                                         </button>

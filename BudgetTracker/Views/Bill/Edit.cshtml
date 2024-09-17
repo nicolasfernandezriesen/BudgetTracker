@@ -2,21 +2,16 @@
 
 <div class="d-flex flex-column justify-content-center align-items-center" style="height: 65vh;">
 
-    <div class="d-flex justify-content-evenly align-items-center p-2" style="max-width: 75%; min-width: 30%;">
-        <a asp-controller="User" asp-action="Index" class="btn text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" width="1.1vw" height="1.1vw" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16">
-                <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z" />
-            </svg>
-        </a>
-        <h1>Nuevo gasto</h1>
+    <div class="d-flex justify-content-center align-items-center p-2" style="max-width: 75%; min-width: 30%;">
+        <h1>Editar gasto</h1>
     </div>
 
     <div class="border  rounded box-shadow p-4 m-4 bg-secondary center" style="max-width: 75%;">
-        <form asp-controller="Bill" asp-action="Create" id="createBillForm">
+        <form asp-controller="Bill" asp-action="Edit" id="editBillForm">
             <div class="p-2">
                 <div class="form-group text-center">
                     <label asp-for="Bill.BillsAmount" class="form-label pb-1">Monto del ingreso: </label><br />
-                    <input asp-for="Bill.BillsAmount" class="form-control text-center" type="number" name="amount" min="0" style="max-width: 10vw; display:inline;" required />
+                    <input asp-for="Bill.BillsAmount" class="form-control text-center" type="number" name="amount" value="@Model.Bill.BillsAmount" min="0" style="max-width: 10vw; display:inline;" required />
                 </div>
                 <div class="form-group text-center">
                     <label asp-for="Bill.CategoryId" class="form-label pt-2 pb-1">Categoria (Seleccionar uno): </label>
@@ -32,21 +27,23 @@
                 </div>
                 <div class="form-group text-center">
                     <label asp-for="Bill.BillsDesc" class="form-label pt-2 pb-1">Descripcion (opcional): </label>
-                    <textarea asp-for="Bill.BillsDesc" class="form-control" name="desc"></textarea>
+                    <textarea asp-for="Bill.BillsDesc" class="form-control" name="desc" value="@Model.Bill.BillsDesc"></textarea>
                 </div>
                 <div class="form-group pt-2 text-center">
                     <label asp-for="Bill.BillsDate" class="form-label pt-2 pb-1 pe-4">Fecha: </label><br />
-                    <input asp-for="Bill.BillsDate" type="date" class="form-control text-center" name="date" style="max-width: 10vw; display:inline;" min="2024-01-01" max="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                    <input asp-for="Bill.BillsDate" type="date" name="date" class="form-control text-center" style="max-width: 10vw; display:inline;" min="2024-01-01" max="@DateTime.Now.ToString("yyyy-MM-dd")" required />
                 </div>
             </div>
-
-            <div class="pt-2 text-center">
-                <button type="button" class="btn btn-primary" onclick="CreateBill()">Guardar nuevo gasto</button>
+            <input type="hidden" name="id" value="@Model.Bill.BillsId" />
+            <div class="d-flex justify-content-evenly align-items-center pt-2">
+                <button type="button" class="btn btn-danger" onclick="Cancel()">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="SaveEdit()">Guardar gasto</button>
             </div>
         </form>
     </div>
 </div>
 
+<div id="billDate" data-bill-date="@Model.Bill.BillsDate.ToString("yyyy-MM-dd")"></div>
 @section Scripts {
-    <script src="~/js/Bill/Create.js"></script>
+    <script src="~/js/Bill/Edit.js"></script>
 }

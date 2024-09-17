@@ -72,6 +72,38 @@ namespace BudgetTracker.Controllers
             return View("Home");
         }
 
+        // GET: BillController/Details/"5/9/2024"
+        public async Task<IActionResult> Details(string selectedDate)
+        {
+            try
+            {
+                var idUser = GetUserID();
+
+                DateOnly dateToSearch = DateOnly.Parse(selectedDate);
+
+                DetailBillIncomeViewModel detailBillIncomeViewModel = new DetailBillIncomeViewModel { };
+
+                var income = await context.Incomes
+                            .Include(i => i.Category)
+                            .Where(i => i.IncomeDate == dateToSearch && i.UserId == idUser)
+                            .ToListAsync();
+
+                if (income == null)
+                {
+                    return BadRequest(new { message = "The income/s does not exist." });
+                }
+
+                detailBillIncomeViewModel.Income = income;
+                detailBillIncomeViewModel.Date = dateToSearch;
+
+                return View("Details", detailBillIncomeViewModel);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         // GET: IncomeController/Create
         public async Task<IActionResult> Create()
         {
@@ -127,6 +159,31 @@ namespace BudgetTracker.Controllers
             catch (ArgumentException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        // GET: IncomeController/Edit/?id=4&selectedDate=8%2F9%2F2024
+        public ActionResult Edit(int id, string selectedDate)
+        {
+            try
+            {
+                int userId = GetUserID();
+                DateOnly date = DateOnly.Parse(selectedDate);
+
+                var income = context.Incomes
+                    .Include(i => i.Category)
+                    .FirstOrDefault(i => i.IncomeId == id && i.UserId == userId && i.IncomeDate == date);
+
+                if (income == null)
+                {
+                    return BadRequest(new { message = "The income does not exist." });
+                }
+
+                return View(income);
             }
             catch (Exception)
             {
