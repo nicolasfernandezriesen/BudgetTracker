@@ -1,4 +1,4 @@
-﻿function IsValidBill(amount, date) {
+function IsValidIncome(amount, date) {
     if (amount === '' || amount < 0) {
         throw new Error('El monto no puede ser menor a 0.');
     }
@@ -19,10 +19,10 @@
 }
 
 async function SaveEdit() {
-    const form = document.getElementById('editBillForm');
+    const form = document.getElementById('editIncomeForm');
     const formData = new FormData(form);
 
-    const loadingSwal = showLoadingAlert('Guardando gasto');
+    const loadingSwal = showLoadingAlert('Guardando ingreso');
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -33,9 +33,9 @@ async function SaveEdit() {
 
 
     try {
-        IsValidBill(dataObject['amount'], dataObject['date']);
+        IsValidIncome(dataObject['amount'], dataObject['date']);
 
-        const response = await fetch('/Bill/Edit', {
+        const response = await fetch('/Income/Edit', {
             method: 'POST',
             body: formData
         });
@@ -45,7 +45,7 @@ async function SaveEdit() {
         if (response.ok) {
             await showSuccessAlert("Guardado", data.message);
 
-            window.location.href = `/Bill/Details/?selectedDate=${dataObject['date']}`;
+            window.location.href = `/Income/Details/?selectedDate=${dataObject['date']}`;
         } else {
             throw new Error(data.message);
         }
@@ -57,8 +57,8 @@ async function SaveEdit() {
 }
 
 function Cancel() {
-    var billDateElement = document.getElementById('billDate');
-    var billDate = billDateElement.getAttribute('data-bill-date');
+    var incomeDateElement = document.getElementById('incomeDate');
+    var incomeDate = incomeDateElement.getAttribute('data-income-date');
 
-    window.location.href = `/Bill/Details/?selectedDate=${billDate}`;
+    window.location.href = `/Income/Details/?selectedDate=${incomeDate}`;
 }

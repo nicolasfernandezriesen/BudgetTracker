@@ -174,15 +174,21 @@ namespace BudgetTracker.Controllers
         }
 
         // GET: IncomeController/Edit/?id=4&selectedDate=8%2F9%2F2024
-        public ActionResult Edit(int id, string selectedDate)
+        public async Task<IActionResult> Edit(int id, string selectedDate)
         {
             try
             {
                 int userId = GetUserID();
                 DateOnly date = DateOnly.Parse(selectedDate);
 
+                var categories = await context.Categorys
+                .Select(c => new SelectListItem
+                {
+                    Value = c.CategoryId.ToString(),
+                    Text = c.CategoryName
+                }).ToListAsync();
+
                 var income = context.Incomes
-                    .Include(i => i.Category)
                     .FirstOrDefault(i => i.IncomeId == id && i.UserId == userId && i.IncomeDate == date);
 
                 if (income == null)
@@ -190,11 +196,57 @@ namespace BudgetTracker.Controllers
                     return BadRequest(new { message = "The income does not exist." });
                 }
 
-                return View(income);
+                var viewModel = new IncomeCreateViewModel
+                {
+                    Income = income,
+                    Categories = categories
+                };
+
+                return View(viewModel);
             }
             catch (Exception)
             {
                 return BadRequest();
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int amount, int categoryId, string desc, DateOnly date, int id)
+        {
+            try
+            {
+                CheckIsValid(amount, date);
+
+                int userId = GetUserID();
+
+                var income = await context.Incomes
+                    .FirstOrDefaultAsync(b => b.UserId == userId && b.IncomeId == id);
+
+                if (income == null)
+                {
+                    return BadRequest(new { message = "No se encontro el ingreso." });
+                }
+
+                income.IncomeAmount = amount;
+                income.IncomeDesc = desc;
+                income.IncomeDate = date;
+                income.CategoryId = categoryId;
+
+                var monthlyTotal = GetOrCreateMonthlyTotal(income.IncomeDate.Month, userId);
+
+                monthlyTotal.TotalIncome -= income.IncomeAmount;
+
+                context.MonthlyTotals.Update(monthlyTotal);
+                context.Incomes.Update(income);
+                await context.SaveChangesAsync();
+
+                return Ok(new { message = "El ingreso se ha actualizado correctamente." });
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
     }

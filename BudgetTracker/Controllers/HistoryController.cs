@@ -31,7 +31,7 @@ namespace BudgetTracker.Controllers
 
         #endregion
 
-        // GET: HistoryController/GetBillIncomeAndMonthlyTotal
+        // GET: HistoryController/GetBillIncomeAndMonthlyTotal?month=5&year=2021
         public async Task<IActionResult> GetBillIncomeAndMonthlyTotal(int month, int year)
         {
             try

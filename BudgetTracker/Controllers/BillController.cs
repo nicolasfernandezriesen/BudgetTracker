@@ -175,7 +175,7 @@ namespace BudgetTracker.Controllers
             }
         }
 
-        // GET: BillController/Edit/5
+        // GET: BillController/Edit/?id=4&selectedDate=8%2F9%2F2024
         public async Task<IActionResult> Edit(int id, string selectedDate)
         {
             try
