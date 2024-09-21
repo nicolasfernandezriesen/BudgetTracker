@@ -12,21 +12,21 @@
                 <div class="row mb-3">
                     <label asp-for="UserName" class="col-sm-3 col-form-label">Usuario:</label>
                     <div class="col-sm-9">
-                        <input asp-for="UserName" type="text" class="form-control" required>
+                        <input asp-for="UserName" type="text" class="form-control" name="username" required>
                         <span asp-validation-for="UserName" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <label asp-for="UserEmail" class="col-sm-3 col-form-label">Email:</label>
                     <div class="col-sm-9">
-                        <input asp-for="UserEmail" type="email" class="form-control" required>
+                        <input asp-for="UserEmail" type="email" class="form-control" name="email" required>
                         <span asp-validation-for="UserEmail" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <label asp-for="UserPassword" class="col-sm-3 col-form-label">Contraseña:</label>
                     <div class="col-sm-9">
-                        <input asp-for="UserPassword" type="password" class="form-control" required>
+                        <input asp-for="UserPassword" type="password" class="form-control" name="password" required>
                     </div>
                 </div>
 
