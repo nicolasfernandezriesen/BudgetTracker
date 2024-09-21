@@ -152,6 +152,8 @@ public partial class BudgettrackerdbContext : DbContext
             entity.Property(e => e.UserPassword)
                 .HasMaxLength(250)
                 .HasColumnName("user_password");
+            entity.HasIndex(e => e.UserEmail).IsUnique().HasDatabaseName("user_email");
+            entity.HasIndex(e => e.UserName).IsUnique().HasDatabaseName("user_name");
         });
 
         OnModelCreatingPartial(modelBuilder);

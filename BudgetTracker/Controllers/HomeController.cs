@@ -66,41 +66,19 @@ namespace BudgetTracker.Controllers
         // POST: UserController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(User newUser)
+        public async Task<IActionResult> Create(string username, string email, string password)
         {
-            ViewBag.ErrorCreateUser = 0;
-            int userNameOrEmailExists = 0;
-
             try
             {
-                var userExists = context.Users.Where(u => u.UserEmail == newUser.UserEmail).FirstOrDefault();
-                if (userExists != null)
-                {
-                    ViewBag.ErrorMessage += "Este correo ya está registrado. ";
-                    ViewBag.ErrorCreateUser = 1;
-                    userNameOrEmailExists = 1;
-                }
-
-                userExists = context.Users.Where(u => u.UserName == newUser.UserName).FirstOrDefault();
-                if (userExists != null)
-                {
-                    ViewBag.ErrorMessage += "Este nombre de usuario ya está en uso. ";
-                    ViewBag.ErrorCreateUser = 1;
-                    userNameOrEmailExists = 1;
-                }
-
-                if (userNameOrEmailExists > 0)
-                {
-                    return Conflict();
-                };
-
                 // Check if the email is valid
-                if (!IsValidEmail(newUser.UserEmail))
+                if (!IsValidEmail(email))
                 {
-                    ViewBag.ErrorMessage += "El correo electrónico no es válido. ";
+                    ViewBag.ErrorMessage += "El correo electrï¿½nico no es valido. ";
                     ViewBag.ErrorCreateUser = 1;
-                    return BadRequest(new { Message = "El correo electrónico no es válido." });
+                    return BadRequest(new { Message = "El correo electrï¿½nico no es valido." });
                 }
+                
+                User newUser = new User { UserName = username, UserEmail = email, UserPassword = password };
 
                 context.Users.Add(newUser);
                 context.SaveChanges();
@@ -112,9 +90,19 @@ namespace BudgetTracker.Controllers
 
                 return Ok(new { Message = "Usuario registrado exitosamente." });
             }
-            catch
+            catch (Exception ex)
             {
-                return BadRequest(new { Message = "Ocurrió un error inesperado." });
+                ViewBag.ErrorCreateUser = 1;
+                if (ex.InnerException.Message.Contains("user_email"))
+                {
+                    return BadRequest(new { Message = "El correo electronico ya esta registrado." });
+                } else if (ex.InnerException.Message.Contains("user_name"))
+                {
+                    return BadRequest(new { Message = "El nombre de usuario ya esta registrado." });
+                } else
+                {
+                    return BadRequest(ex.InnerException.Message);
+                }
             }
         }
 
@@ -149,7 +137,7 @@ namespace BudgetTracker.Controllers
             if (user == null)
             {
                 ViewBag.ErrorLogin = 1;
-                ViewBag.ErrorMessage = "Usuario o contraseña incorrectos";
+                ViewBag.ErrorMessage = "Usuario o contraseï¿½a incorrectos";
                 return BadRequest(new { Message = "Credenciales invalidas." });
             };
 

@@ -11,8 +11,13 @@ async function CreateUser() {
 
     await new Promise(resolve => setTimeout(resolve, 1000)); 
 
+    const dataObject = {};
+    formData.forEach((value, key) => {
+        dataObject[key] = value;
+    });
+
     try {
-        if (!checkValidEmail(dataObject['UserEmail'])) {
+        if (!checkValidEmail(dataObject['email'])) {
             throw new Error('El email no es valido.');
         }
 
@@ -21,12 +26,14 @@ async function CreateUser() {
             body: formData
         });
 
+        const data = await response.json();
+
         if (response.ok) {
             await showSuccessAlert('¡Éxito!', 'Usuario creado correctamente.');
 
             window.location.href = '/User';
         } else {
-            throw new Error('Hubo un problema a la hora de crear el usuario. Vuelve a intentarlo.');
+            throw new Error(data.message);
         }
     } catch (error) {
         await showErrorAlert("Error", error.message);
