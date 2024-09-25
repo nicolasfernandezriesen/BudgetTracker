@@ -31,7 +31,6 @@ async function SaveEdit() {
         dataObject[key] = value;
     });
 
-
     try {
         IsValidBill(dataObject['amount'], dataObject['date']);
 
