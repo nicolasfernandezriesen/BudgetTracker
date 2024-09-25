@@ -45,10 +45,10 @@
                                             </form>
                                         </li>
                                         <li>
-                                            <form asp-action="Delete" asp-controller="Bill" method="get">
+                                            <form asp-action="Delete" asp-controller="Bill" method="post" id="deleteFromr_@bill.BillsId">
                                                 <input type="hidden" name="id" value="@bill.BillsId" />
                                                 <input type="hidden" name="selectedDate" value="@Model.Date.ToString()" />
-                                                <button type="submit" class="dropdown-item">Borrar</button>
+                                                <button type="button" class="dropdown-item" onclick="Delete('bill', '@bill.BillsId')">Borrar</button>
                                             </form>
                                         </li>
                                     </ul>

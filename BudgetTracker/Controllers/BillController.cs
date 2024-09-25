@@ -252,24 +252,41 @@ namespace BudgetTracker.Controllers
             }
         }
 
-        // GET: BillController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: BillController/Delete/5
+        // POST: BillController/Delete/?id=4&selectedDate=8%2F9%2F2024
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<IActionResult> Delete(int id, string selectedDate)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
+            int userId = GetUserID();
+            DateOnly date = DateOnly.Parse(selectedDate);
+
+            var bill = await context.Bills
+                .FirstOrDefaultAsync(b => b.BillsId == id && b.UserId == userId && b.BillsDate == date);
+
+            if (bill == null)
             {
-                return View();
+                return BadRequest(new { message = "No se encontró el gasto." });
+            }
+
+            var monthlyTotal = await context.MonthlyTotals
+                .FirstOrDefaultAsync(mt => mt.MonthlyTotalsMonth == bill.BillsDate.Month && mt.UserId == userId);
+
+            if (monthlyTotal != null)
+            {
+                monthlyTotal.TotalBill -= bill.BillsAmount;
+                context.MonthlyTotals.Update(monthlyTotal);
+            }
+
+            context.Bills.Remove(bill);
+            await context.SaveChangesAsync();
+
+            return Ok(new { message = "El gasto se ha eliminado correctamente." });
+            }
+            catch (Exception ex)
+            {
+            return BadRequest(ex.Message);
             }
         }
     }
