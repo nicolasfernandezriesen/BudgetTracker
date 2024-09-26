@@ -60,6 +60,8 @@ namespace BudgetTracker.Controllers
         // GET: UserController/Create
         public IActionResult Create()
         {
+            Response.Cookies.Delete("userId");
+            HttpContext.SignOutAsync();
             return View();
         }
 

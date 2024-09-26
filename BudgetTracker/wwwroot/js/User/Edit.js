@@ -57,3 +57,7 @@ async function sendEditUser() {
         Swal.close();
     }
 }
+
+function goCreateUserView() {
+    window.location.href = '/Home/Create';
+}
