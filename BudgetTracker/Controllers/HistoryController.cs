@@ -1,5 +1,6 @@
 ﻿using BudgetTracker.Data;
 using BudgetTracker.ViewModels;
+using BudgetTracker.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
@@ -48,6 +49,15 @@ namespace BudgetTracker.Controllers
 
                 var monthlyTotal = await context.MonthlyTotals
                     .FirstOrDefaultAsync(mt => mt.MonthlyTotalsMonth == month && mt.MonthlyTotalsYear == year && mt.UserId == idUser);
+
+                if (monthlyTotal == null) {
+                    monthlyTotal = new MonthlyTotal
+                    {
+                        MonthlyTotalsMonth = month,
+                        MonthlyTotalsYear = year,
+                        UserId = idUser
+                    };
+                }
 
                 var historyViewModel = new HistoryViewModel
                 {
