@@ -1,4 +1,16 @@
-﻿function goBackPage(date = null) {
+﻿function previousOrNextCalendar(month, year) {
+    if (month == 13) {
+        month = 1;
+        year++;
+    }
+    else if (month == 0) {
+        month = 12;
+        year--;
+     }
+    window.location.href = "/History/GetBillIncomeAndMonthlyTotal?month=" + month + "&year=" + year;
+}
+
+function goBackPage(date = null) {
 
     if (date == null) {
         window.history.back();
