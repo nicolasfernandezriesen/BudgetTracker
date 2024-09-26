@@ -44,7 +44,21 @@
                     </div>
                 </div>
 
-                <button type="button" class="btn btn-primary" id="submitBtn" onclick="sendEditUser()" style="display:none;">Guardar</button>
+
+                @if (Model.UserEmail == "test@test.com" && Model.UserId == 1)
+                {
+                    <div class="alert alert-danger text-center" role="alert">
+                        <p>
+                            <strong>No se puede editar este usuario.</strong><br />
+                            Para usar estas funciones cree una cuenta.
+                        </p>
+                        <button type="button" class="btn btn-primary" id="submitBtn" onclick="goCreateUserView()" style="display:none;">Crear usuario</button>
+                    </div>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-primary" id="submitBtn" onclick="sendEditUser()" style="display:none;">Guardar</button>
+                }
             </form>
         </div>
     </div>
