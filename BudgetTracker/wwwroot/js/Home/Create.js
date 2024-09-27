@@ -9,8 +9,6 @@ async function CreateUser() {
 
     const loadingSwal = showLoadingAlert('Creando usuario');
 
-    await new Promise(resolve => setTimeout(resolve, 1000)); 
-
     const dataObject = {};
     formData.forEach((value, key) => {
         dataObject[key] = value;

@@ -9,8 +9,6 @@ async function LoginUser() {
 
     const loadingSwal = showLoadingAlert('Iniciando sesion');
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
     const dataObject = {};
     formData.forEach((value, key) => {
         dataObject[key] = value;

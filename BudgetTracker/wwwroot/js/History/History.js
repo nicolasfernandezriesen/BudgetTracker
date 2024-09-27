@@ -54,7 +54,6 @@ async function DeleteBill(id) {
     });
 
     try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
 
         const response = await fetch('/Income/Delete', {
             method: 'POST',
@@ -87,7 +86,6 @@ async function DeleteIncome(id) {
     });
 
     try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
 
         const response = await fetch('/Income/Delete', {
             method: 'POST',
