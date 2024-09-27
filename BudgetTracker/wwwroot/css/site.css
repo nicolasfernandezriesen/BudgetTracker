@@ -41,3 +41,7 @@ body {
 .btn-calendar:hover {
     color: black;
 }
+
+.btn-previousnext-calendar:hover {
+    cursor: pointer;
+}
