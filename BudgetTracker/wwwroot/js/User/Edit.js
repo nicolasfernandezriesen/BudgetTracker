@@ -27,8 +27,6 @@ async function sendEditUser() {
 
     const loadingSwal = showLoadingAlert();
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
     const dataObject = {};
     formData.forEach((value, key) => {
         dataObject[key] = value;

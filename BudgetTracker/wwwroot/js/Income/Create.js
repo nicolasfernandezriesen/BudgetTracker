@@ -24,8 +24,6 @@ async function CreateIncome() {
 
     const loadingSwal = showLoadingAlert('Creando ingreso');
 
-    await new Promise(resolve => setTimeout(resolve, 1000)); 
-
     const dataObject = {};
     formData.forEach((value, key) => {
         dataObject[key] = value;
