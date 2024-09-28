@@ -30,7 +30,7 @@ namespace BudgetTracker.Controllers
             return int.Parse(stringId);
         }
 
-        private void CheckIsValid(int amount, DateOnly date)
+        private void CheckIsValid(int amount, int categoriId, DateOnly date)
         {
             if (date > DateOnly.FromDateTime(DateTime.Now))
             {
@@ -38,7 +38,11 @@ namespace BudgetTracker.Controllers
             }
             if (amount <= 0)
             {
-                throw new ArgumentException("El monto del ingreso debe ser mayor a 0.");
+                throw new ArgumentException("El monto del gasto debe ser mayor a 0.");
+            }
+            if (categoriId == 0)
+            {
+                throw new ArgumentException("Se tiene que elegir una categoría.");
             }
         }
 
@@ -140,7 +144,7 @@ namespace BudgetTracker.Controllers
         {
             try
             {
-                CheckIsValid(amount, date);
+                CheckIsValid(amount, categoryId, date);
 
                 int userId = GetUserID();
 
@@ -216,7 +220,7 @@ namespace BudgetTracker.Controllers
         {
             try
             {
-                CheckIsValid(amount, date);
+                CheckIsValid(amount, categoryId, date);
 
                 int userId = GetUserID();
 
