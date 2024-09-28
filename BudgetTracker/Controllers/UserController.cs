@@ -3,6 +3,7 @@ using BudgetTracker.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 
 namespace BudgetTracker.Controllers
 {
@@ -76,7 +77,7 @@ namespace BudgetTracker.Controllers
 
                 if (existingUser == null)
                 {
-                    return NotFound();
+                    return NotFound(new { Message = "Usuario no encontrado. Intentelo de nuevo." });
                 }
 
                 // Update the user properties
@@ -92,7 +93,7 @@ namespace BudgetTracker.Controllers
                 // Save the changes to the database
                 await context.SaveChangesAsync();
 
-                return Ok();
+                return Ok(new { Message = "Los cambios se han guardado exitosamente." });
             }
             catch
             {

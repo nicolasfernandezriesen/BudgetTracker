@@ -1,10 +1,14 @@
-﻿function IsValidIncome(amount, date) {
-    if (amount === '' || amount < 0) {
+﻿function IsValidBill(amount, categoryId, date) {
+    if (amount === undefined || amount <= 0) {
         throw new Error('El monto no puede ser menor a 0.');
     }
 
-    if (date === '') {
+    if (date === undefined) {
         throw new Error('La fecha no puede estar vacía.');
+    }
+
+    if (categoryId === undefined) {
+        throw new Error('Se tiene que seleccionar una categoria.');
     }
 
     const currentDate = new Date();
@@ -22,15 +26,15 @@ async function CreateIncome() {
     const form = document.getElementById('createIncomeForm');
     const formData = new FormData(form);
 
-    const loadingSwal = showLoadingAlert('Creando ingreso');
-
     const dataObject = {};
     formData.forEach((value, key) => {
         dataObject[key] = value;
     });
 
     try {
-        IsValidIncome(dataObject['amount'], dataObject['date']);
+        IsValidIncome(dataObject['amount'], dataObject['categoryId'], dataObject['date']);
+
+        const loadingSwal = showLoadingAlert('Creando ingreso');
 
         const response = await fetch('/Income/Create', {
             method: 'POST',
