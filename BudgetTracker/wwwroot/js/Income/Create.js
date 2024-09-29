@@ -1,4 +1,4 @@
-﻿function IsValidBill(amount, categoryId, date) {
+﻿function IsValidIncome(amount, categoryId, date) {
     if (amount === undefined || amount <= 0) {
         throw new Error('El monto no puede ser menor a 0.');
     }
