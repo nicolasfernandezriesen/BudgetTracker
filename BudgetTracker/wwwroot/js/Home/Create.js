@@ -7,8 +7,6 @@ async function CreateUser() {
     const form = document.getElementById('createUserForm');
     const formData = new FormData(form);
 
-    const loadingSwal = showLoadingAlert('Creando usuario');
-
     const dataObject = {};
     formData.forEach((value, key) => {
         dataObject[key] = value;
@@ -18,6 +16,8 @@ async function CreateUser() {
         if (!checkValidEmail(dataObject['email'])) {
             throw new Error('El email no es valido.');
         }
+
+        const loadingSwal = showLoadingAlert('Creando usuario');
 
         const response = await fetch('/Home/Create', {
             method: 'POST',
@@ -31,7 +31,7 @@ async function CreateUser() {
 
             window.location.href = '/User';
         } else {
-            throw new Error(data.message);
+            throw new Error('Ah ocurrido un error, vuelve a intertarlo, si el error persiste, contacte a soporte.');
         }
     } catch (error) {
         await showErrorAlert("Error", error.message);

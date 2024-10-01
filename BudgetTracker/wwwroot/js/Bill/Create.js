@@ -11,14 +11,15 @@
         throw new Error('Se tiene que seleccionar una categoria.');
     }
 
-    const currentDate = new Date();
     const twoMonthsAgo = new Date();
+    const twoMonthsAfter = new Date();
     twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+    twoMonthsAfter.setMonth(twoMonthsAfter.getMonth() + 2);
 
     const incomeDate = new Date(date);
 
-    if (incomeDate <= twoMonthsAgo || incomeDate > currentDate) {
-        throw new Error('La fecha no puede ser futura ni ser hace 2 o mas meses atras.');
+    if (incomeDate <= twoMonthsAgo || incomeDate > twoMonthsAfter) {
+        throw new Error('La fecha no puede ser hace 2 o mas meses atras o 2 o mas meses adelante.');
     }
 }
 
@@ -40,13 +41,12 @@ async function CreateBill() {
             method: 'POST',
             body: formData,
         });
-        const data = await response.json();
 
         if (response.ok) {
-            await showSuccessAlert('¡Éxito!', data.message);
+            await showSuccessAlert('¡Éxito!', 'El gasto se ha creado exitosamente.');
             window.location.href = '/User';
         } else {
-            throw new Error(data.message);
+            throw new Error('Ah ocurrido un error, vuelve a intertarlo, si el error persiste, contacte a soporte.');
         }
     } catch (error) {
         await showErrorAlert("Error", error.message);

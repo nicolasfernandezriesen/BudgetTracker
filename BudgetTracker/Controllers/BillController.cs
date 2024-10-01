@@ -52,19 +52,19 @@ namespace BudgetTracker.Controllers
             return monthlyTotal;
         }
 
-        private void CheckIsValid(int amount, int categoriId,DateOnly date)
+        private void CheckIsValid(int amount, int categoryId, DateOnly date)
         {
-            if (date > DateOnly.FromDateTime(DateTime.Now))
+            if (date > DateOnly.FromDateTime(DateTime.Now.AddMonths(2)))
             {
-                throw new ArgumentException("La fecha no puede ser en el futuro.");
+                throw new ArgumentException("The date cannot be greater than 2 months.");
             }
             if (amount <= 0)
             {
-                throw new ArgumentException("El monto del gasto debe ser mayor a 0.");
+                throw new ArgumentException("The amount of the expense must be greater than 0.");
             }
-            if (categoriId == 0)
+            if (categoryId == 0)
             {
-                throw new ArgumentException("Se tiene que elegir una categoría.");
+                throw new ArgumentException("You must choose a category.");
             }
         }
 
@@ -169,7 +169,7 @@ namespace BudgetTracker.Controllers
                 context.Bills.Add(bill);
                 context.SaveChanges();
 
-                return Ok(new { message = "El nuevo gasto se ha guardado correctamente." });
+                return Ok(new { message = "The bill was saved." });
             }
             catch (ArgumentException ex)
             {
@@ -233,7 +233,7 @@ namespace BudgetTracker.Controllers
 
                 if (bill == null)
                 {
-                    return BadRequest(new { message = "No se encontro el gasto." });
+                    return BadRequest(new { message = "Bill was not found." });
                 }
 
                 bill.BillsAmount = amount;
@@ -249,7 +249,7 @@ namespace BudgetTracker.Controllers
                 context.Bills.Update(bill);
                 await context.SaveChangesAsync();
 
-                return Ok(new { message = "El gasto se ha actualizado correctamente." });
+                return Ok(new { message = "The expense has been updated successfully." });
 
             }
             catch (Exception ex)
@@ -265,34 +265,34 @@ namespace BudgetTracker.Controllers
         {
             try
             {
-            int userId = GetUserID();
-            DateOnly date = DateOnly.Parse(selectedDate);
+                int userId = GetUserID();
+                DateOnly date = DateOnly.Parse(selectedDate);
 
-            var bill = await context.Bills
-                .FirstOrDefaultAsync(b => b.BillsId == id && b.UserId == userId && b.BillsDate == date);
+                var bill = await context.Bills
+                    .FirstOrDefaultAsync(b => b.BillsId == id && b.UserId == userId && b.BillsDate == date);
 
-            if (bill == null)
-            {
-                return BadRequest(new { message = "No se encontró el gasto." });
-            }
+                if (bill == null)
+                {
+                    return BadRequest(new { message = "The expense was not found." });
+                }
 
-            var monthlyTotal = await context.MonthlyTotals
-                .FirstOrDefaultAsync(mt => mt.MonthlyTotalsMonth == bill.BillsDate.Month && mt.UserId == userId);
+                var monthlyTotal = await context.MonthlyTotals
+                    .FirstOrDefaultAsync(mt => mt.MonthlyTotalsMonth == bill.BillsDate.Month && mt.UserId == userId);
 
-            if (monthlyTotal != null)
-            {
-                monthlyTotal.TotalBill -= bill.BillsAmount;
-                context.MonthlyTotals.Update(monthlyTotal);
-            }
+                if (monthlyTotal != null)
+                {
+                    monthlyTotal.TotalBill -= bill.BillsAmount;
+                    context.MonthlyTotals.Update(monthlyTotal);
+                }
 
-            context.Bills.Remove(bill);
-            await context.SaveChangesAsync();
+                context.Bills.Remove(bill);
+                await context.SaveChangesAsync();
 
-            return Ok(new { message = "El gasto se ha eliminado correctamente." });
+                return Ok(new { message = "The expense has been successfully deleted." });
             }
             catch (Exception ex)
             {
-            return BadRequest(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
     }

@@ -69,7 +69,7 @@ namespace BudgetTracker.Controllers
             {
                 if (!IsValidEmail(user.UserEmail))
                 {
-                    return BadRequest(new { Message = "El correo electrónico no es válido." });
+                    return BadRequest(new { Message = "The email is not valid." });
                 }
 
                 int userId = GetUserID();
@@ -77,7 +77,7 @@ namespace BudgetTracker.Controllers
 
                 if (existingUser == null)
                 {
-                    return NotFound(new { Message = "Usuario no encontrado. Intentelo de nuevo." });
+                    return NotFound(new { Message = "User not found. Please try again." });
                 }
 
                 // Update the user properties
@@ -93,7 +93,7 @@ namespace BudgetTracker.Controllers
                 // Save the changes to the database
                 await context.SaveChangesAsync();
 
-                return Ok(new { Message = "Los cambios se han guardado exitosamente." });
+                return Ok(new { Message = "Changes have been saved successfully." });
             }
             catch
             {

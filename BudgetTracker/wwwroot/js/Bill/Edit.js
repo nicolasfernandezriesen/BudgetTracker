@@ -22,8 +22,6 @@ async function SaveEdit() {
     const form = document.getElementById('editBillForm');
     const formData = new FormData(form);
 
-    const loadingSwal = showLoadingAlert('Guardando gasto');
-
     const dataObject = {};
     formData.forEach((value, key) => {
         dataObject[key] = value;
@@ -32,19 +30,18 @@ async function SaveEdit() {
     try {
         IsValidBill(dataObject['amount'], dataObject['date']);
 
+        const loadingSwal = showLoadingAlert('Guardando gasto');
+
         const response = await fetch('/Bill/Edit', {
             method: 'POST',
             body: formData
         });
 
-        const data = await response.json();
-
         if (response.ok) {
-            await showSuccessAlert("Guardado", data.message);
-
+            await showSuccessAlert("Guardado", 'Se editado correctamente el gasto.');
             window.location.href = `/Bill/Details/?selectedDate=${dataObject['date']}`;
         } else {
-            throw new Error(data.message);
+            throw new Error('Ah ocurrido un error, vuelve a intertarlo, si el error persiste, contacte a soporte.');
         }
     } catch (error) {
         await showErrorAlert("Error", error.message);
