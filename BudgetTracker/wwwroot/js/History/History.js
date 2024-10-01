@@ -55,7 +55,7 @@ async function DeleteBill(id) {
 
     try {
 
-        const response = await fetch('/Income/Delete', {
+        const response = await fetch('/Bill/Delete', {
             method: 'POST',
             body: formData
         });
