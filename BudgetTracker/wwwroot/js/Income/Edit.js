@@ -22,8 +22,6 @@ async function SaveEdit() {
     const form = document.getElementById('editIncomeForm');
     const formData = new FormData(form);
 
-    const loadingSwal = showLoadingAlert('Guardando ingreso');
-
     const dataObject = {};
     formData.forEach((value, key) => {
         dataObject[key] = value;
@@ -33,19 +31,18 @@ async function SaveEdit() {
     try {
         IsValidIncome(dataObject['amount'], dataObject['date']);
 
+        const loadingSwal = showLoadingAlert('Guardando ingreso');
+
         const response = await fetch('/Income/Edit', {
             method: 'POST',
             body: formData
         });
 
-        const data = await response.json();
-
         if (response.ok) {
-            await showSuccessAlert("Guardado", data.message);
-
+            await showSuccessAlert("Guardado", 'Se ha editado correctamente.');
             window.location.href = `/Income/Details/?selectedDate=${dataObject['date']}`;
         } else {
-            throw new Error(data.message);
+            throw new Error('Ah ocurrido un error, vuelve a intertarlo, si el error persiste, contacte a soporte.');
         }
     } catch (error) {
         await showErrorAlert("Error", error.message);

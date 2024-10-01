@@ -41,13 +41,11 @@ async function CreateIncome() {
             body: formData
         });
 
-        const data = await response.json();
-
         if (response.ok) {
-            await showSuccessAlert('¡Éxito!', data.message);
+            await showSuccessAlert('¡Éxito!', 'El ingreso se ha creado exitosamente.');
             window.location.href = '/User';
         } else {
-            throw new Error(data.message);
+            throw new Error('Ah ocurrido un error, vuelve a intertarlo, si el error persiste, contacte a soporte.');
         }  
     } catch (error) {
         await showErrorAlert("Error", error.message);

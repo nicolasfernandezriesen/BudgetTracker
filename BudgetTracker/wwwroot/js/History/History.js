@@ -35,7 +35,7 @@ function Delete(type, id) {
         if (result.isConfirmed) {
             if (type === 'bill') {
                 DeleteBill(id);
-            } else {
+            } else if (type === 'income') {
                 DeleteIncome(id);
             }
         }
@@ -46,26 +46,24 @@ async function DeleteBill(id) {
     const form = document.getElementById(`deleteFromr_${id}`);
     const formData = new FormData(form);
 
-    const loadingSwal = showLoadingAlert('Borrando gasto');
-
     const dataObject = {};
     formData.forEach((value, key) => {
         dataObject[key] = value;
     });
 
     try {
+        const loadingSwal = showLoadingAlert('Borrando gasto');
 
         const response = await fetch('/Bill/Delete', {
             method: 'POST',
             body: formData
         });
-        const data = await response.json();
 
         if (response.ok) {
-            await showSuccessAlert("Borrado", data.message);
+            await showSuccessAlert("Borrado", 'El gasto se ah borrado exitosamente.');
             goBackPage(dataObject['date']);
         } else {
-            throw new Error(data.message);
+            throw new Error('Ah ocurrido un error, vuelve a intertarlo, si el error persiste, contacte a soporte.');
         }
     } catch (error) {
         await showErrorAlert("Error", error.message);
@@ -78,14 +76,13 @@ async function DeleteIncome(id) {
     const form = document.getElementById(`deleteFromr_${id}`);
     const formData = new FormData(form);
 
-    const loadingSwal = showLoadingAlert('Borrando ingreso');
-
     const dataObject = {};
     formData.forEach((value, key) => {
         dataObject[key] = value;
     });
 
     try {
+        const loadingSwal = showLoadingAlert('Borrando ingreso');
 
         const response = await fetch('/Income/Delete', {
             method: 'POST',
@@ -94,10 +91,10 @@ async function DeleteIncome(id) {
         const data = await response.json();
 
         if (response.ok) {
-            await showSuccessAlert("Borrado", data.message);
+            await showSuccessAlert("Borrado", 'El ingreso se ah borrado exitosamente.');
             goBackPage(dataObject['date']);
         } else {
-            throw new Error(data.message);
+            throw new Error('Ah ocurrido un error, vuelve a intertarlo, si el error persiste, contacte a soporte.');
         }
     } catch (error) {
         await showErrorAlert("Error", error.message);

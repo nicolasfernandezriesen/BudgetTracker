@@ -75,11 +75,9 @@ namespace BudgetTracker.Controllers
                 // Check if the email is valid
                 if (!IsValidEmail(email))
                 {
-                    ViewBag.ErrorMessage += "El correo electr�nico no es valido. ";
-                    ViewBag.ErrorCreateUser = 1;
-                    return BadRequest(new { Message = "El correo electr�nico no es valido." });
+                    return BadRequest(new { Message = "The email is not valid." });
                 }
-                
+
                 User newUser = new User { UserName = username, UserEmail = email, UserPassword = password };
 
                 context.Users.Add(newUser);
@@ -90,18 +88,19 @@ namespace BudgetTracker.Controllers
                 // Add the validation cookie to the response
                 await HttpContext.SignInAsync(userPrincipal);
 
-                return Ok(new { Message = "Usuario registrado exitosamente." });
+                return Ok(new { Message = "User registered successfully." });
             }
             catch (Exception ex)
             {
-                ViewBag.ErrorCreateUser = 1;
                 if (ex.InnerException.Message.Contains("user_email"))
                 {
-                    return BadRequest(new { Message = "El correo electronico ya esta registrado." });
-                } else if (ex.InnerException.Message.Contains("user_name"))
+                    return BadRequest(new { Message = "The email is already registered." });
+                }
+                else if (ex.InnerException.Message.Contains("user_name"))
                 {
-                    return BadRequest(new { Message = "El nombre de usuario ya esta registrado." });
-                } else
+                    return BadRequest(new { Message = "The username is already registered." });
+                }
+                else
                 {
                     return BadRequest(ex.InnerException.Message);
                 }
@@ -134,13 +133,9 @@ namespace BudgetTracker.Controllers
         {
             var user = context.Users.Where(u => u.UserEmail == userToLogin.UserEmail && u.UserPassword == userToLogin.UserPassword).FirstOrDefault();
 
-            ViewBag.ErrorLogin = 0;
-
             if (user == null)
             {
-                ViewBag.ErrorLogin = 1;
-                ViewBag.ErrorMessage = "Usuario o contrase�a incorrectos";
-                return BadRequest(new { Message = "Credenciales invalidas." });
+                return BadRequest(new { Message = "Invalid credentials." });
             };
 
             var userPrincipal = CreateCookies(user);
@@ -148,7 +143,7 @@ namespace BudgetTracker.Controllers
             // Add the validation cookie to the response
             await HttpContext.SignInAsync(userPrincipal);
 
-            return Ok("Credenciales verificada");
+            return Ok("Credentials verified");
         }
 
         // GET: HomeController/Logout

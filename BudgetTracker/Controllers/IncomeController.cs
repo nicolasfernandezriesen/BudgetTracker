@@ -30,19 +30,19 @@ namespace BudgetTracker.Controllers
             return int.Parse(stringId);
         }
 
-        private void CheckIsValid(int amount, int categoriId, DateOnly date)
+        private void CheckIsValid(int amount, int categoryId, DateOnly date)
         {
-            if (date > DateOnly.FromDateTime(DateTime.Now))
+            if (date > DateOnly.FromDateTime(DateTime.Now.AddMonths(2)))
             {
-                throw new ArgumentException("La fecha no puede ser en el futuro.");
+                throw new ArgumentException("The date cannot be greater than 2 months.");
             }
             if (amount <= 0)
             {
-                throw new ArgumentException("El monto del gasto debe ser mayor a 0.");
+                throw new ArgumentException("The amount of income must be greater than 0.");
             }
-            if (categoriId == 0)
+            if (categoryId == 0)
             {
-                throw new ArgumentException("Se tiene que elegir una categoría.");
+                throw new ArgumentException("You must choose a category.");
             }
         }
 
@@ -165,7 +165,7 @@ namespace BudgetTracker.Controllers
                 context.Incomes.Add(income);
                 context.SaveChanges();
 
-                return Ok(new { message = "El nuevo ingreso se ha guardado correctamente." });
+                return Ok(new { message = "The new income has been saved successfully." });
             }
             catch (ArgumentException ex)
             {
@@ -229,7 +229,7 @@ namespace BudgetTracker.Controllers
 
                 if (income == null)
                 {
-                    return BadRequest(new { message = "No se encontro el ingreso." });
+                    return BadRequest(new { message = "The income was not found." });
                 }
 
                 income.IncomeAmount = amount;
@@ -245,7 +245,7 @@ namespace BudgetTracker.Controllers
                 context.Incomes.Update(income);
                 await context.SaveChangesAsync();
 
-                return Ok(new { message = "El ingreso se ha actualizado correctamente." });
+                return Ok(new { message = "The income has been successfully updated." });
 
             }
             catch (Exception ex)
@@ -269,7 +269,7 @@ namespace BudgetTracker.Controllers
 
                 if (income == null)
                 {
-                    return BadRequest(new { message = "No se encontró el ingreso." });
+                    return BadRequest(new { message = "The income was not found." });
                 }
 
                 var monthlyTotal = await context.MonthlyTotals
@@ -284,7 +284,7 @@ namespace BudgetTracker.Controllers
                 context.Incomes.Remove(income);
                 await context.SaveChangesAsync();
 
-                return Ok(new { message = "El ingreso se ha eliminado correctamente." });
+                return Ok(new { message = "The income has been successfully deleted." });
             }
             catch (Exception ex)
             {
