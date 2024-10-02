@@ -129,7 +129,7 @@
                                                     <form asp-controller="Bill" asp-action="Details">
                                                         <input type="hidden" name="selectedDate" value="@dayAsDateOnly.ToString()" />
                                                         <button type="submit" class="btn-calendar">
-                                                            Gastos: @totalBill.ToString("C")
+                                                            Gastos: @totalBill.ToString("C", new System.Globalization.CultureInfo("es-AR"))
                                                         </button>
                                                     </form>
                                                 </li>
