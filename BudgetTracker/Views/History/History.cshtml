@@ -111,7 +111,7 @@
                                                     <form asp-controller="Income" asp-action="Details">
                                                         <input type="hidden" name="selectedDate" value="@dayAsDateOnly.ToString()" />
                                                         <button type="submit" class="btn-calendar">
-                                                            Ingresos: @totalBill.ToString("C", new System.Globalization.CultureInfo("es-AR"))
+                                                            Ingresos: @totalIncome.ToString("C", new System.Globalization.CultureInfo("es-AR"))
                                                         </button>
                                                     </form>
                                                 </li>
