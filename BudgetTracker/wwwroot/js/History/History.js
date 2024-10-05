@@ -60,7 +60,7 @@ async function DeleteBill(id) {
         });
 
         if (response.ok) {
-            await showSuccessAlert("Borrado", 'El gasto se ah borrado exitosamente.');
+            await showSuccessAlert("Borrado", 'El gasto se borro exitosamente.');
             goBackPage(dataObject['date']);
         } else {
             throw new Error('Ah ocurrido un error, vuelve a intertarlo, si el error persiste, contacte a soporte.');
@@ -91,7 +91,7 @@ async function DeleteIncome(id) {
         const data = await response.json();
 
         if (response.ok) {
-            await showSuccessAlert("Borrado", 'El ingreso se ah borrado exitosamente.');
+            await showSuccessAlert("Borrado", 'El ingreso se borro exitosamente.');
             goBackPage(dataObject['date']);
         } else {
             throw new Error('Ah ocurrido un error, vuelve a intertarlo, si el error persiste, contacte a soporte.');
