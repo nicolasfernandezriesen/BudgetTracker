@@ -29,7 +29,7 @@
                     <tbody>
                         <tr>
                             <td style="width: 6vw">@income.Category.CategoryName</td>
-                            <td style="width: 8.2vw">@income.IncomeAmount.ToString("C")</td>
+                            <td style="width: 8.2vw">@income.IncomeAmount.ToString("C", new System.Globalization.CultureInfo("es-AR"))</td>
                             <td style="width: 60vw">@(income.IncomeDesc ?? "No hay descripcion alguna sobre el ingreso.")</td>
                             <td style="width: 0.2vw">
                                 <div class="dropdown">
