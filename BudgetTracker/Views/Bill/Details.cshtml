@@ -29,7 +29,7 @@
                     <tbody>
                         <tr>
                             <td style="width: 6vw">@bill.Category.CategoryName</td>
-                            <td style="width: 8.2vw">@bill.BillsAmount.ToString("C")</td>
+                            <td style="width: 8.2vw">@bill.BillsAmount.ToString("C", new System.Globalization.CultureInfo("es-AR")))</td>
                             <td style="width: 60vw">@(bill.BillsDesc ?? "No hay descripcion alguna del gasto.")</td>
                             <td style="width: 0.2vw">
                                 <div class="dropdown">
