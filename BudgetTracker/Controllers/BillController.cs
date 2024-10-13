@@ -236,14 +236,14 @@ namespace BudgetTracker.Controllers
                     return BadRequest(new { message = "Bill was not found." });
                 }
 
+                var monthlyTotal = GetOrCreateMonthlyTotal(bill.BillsDate.Month, userId);
+                monthlyTotal.TotalBill -= bill.BillsAmount;
+                monthlyTotal.TotalBill += amount;
+
                 bill.BillsAmount = amount;
                 bill.BillsDesc = desc;
                 bill.BillsDate = date;
                 bill.CategoryId = categoryId;
-
-                var monthlyTotal = GetOrCreateMonthlyTotal(bill.BillsDate.Month, userId);
-
-                monthlyTotal.TotalBill -= bill.BillsAmount;
 
                 context.MonthlyTotals.Update(monthlyTotal);
                 context.Bills.Update(bill);
