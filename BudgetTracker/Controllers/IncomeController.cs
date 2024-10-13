@@ -232,14 +232,15 @@ namespace BudgetTracker.Controllers
                     return BadRequest(new { message = "The income was not found." });
                 }
 
+
+                var monthlyTotal = GetOrCreateMonthlyTotal(income.IncomeDate.Month, userId);
+                monthlyTotal.TotalIncome -= income.IncomeAmount;
+                monthlyTotal.TotalIncome += amount;
+
                 income.IncomeAmount = amount;
                 income.IncomeDesc = desc;
                 income.IncomeDate = date;
                 income.CategoryId = categoryId;
-
-                var monthlyTotal = GetOrCreateMonthlyTotal(income.IncomeDate.Month, userId);
-
-                monthlyTotal.TotalIncome -= income.IncomeAmount;
 
                 context.MonthlyTotals.Update(monthlyTotal);
                 context.Incomes.Update(income);
