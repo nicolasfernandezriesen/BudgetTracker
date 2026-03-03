@@ -362,3 +362,5 @@ FodyWeavers.xsd
 # Ignore appsettings.json
 appsettings.json
 BudgetTracker/appsettings.json
+appsettings.Development.json
+BudgetTracker/appsettings.Development.json
