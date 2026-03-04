@@ -1,5 +1,17 @@
 using BudgetTracker.Data;
+using BudgetTracker.Models;
+using BudgetTracker.Repositories.Bill;
+using BudgetTracker.Repositories.Category;
+using BudgetTracker.Repositories.Income;
+using BudgetTracker.Repositories.MonthlyTotal;
+using BudgetTracker.Repositories.User;
+using BudgetTracker.Services.Bill;
+using BudgetTracker.Services.Category;
+using BudgetTracker.Services.History;
+using BudgetTracker.Services.Income;
+using BudgetTracker.Services.User;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -12,6 +24,23 @@ builder.Services.AddControllersWithViews();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string not found.");
 builder.Services.AddDbContext<BudgettrackerdbContext>(options => options.UseNpgsql(connectionString));
+
+// Identity hashing services
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+// Register Repositories
+builder.Services.AddScoped<IBillRepository, BillRepository>();
+builder.Services.AddScoped<IIncomeRepository, IncomeRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IMonthlyTotalRepository, MonthlyTotalRepository>();
+
+// Register Services
+builder.Services.AddScoped<IBillService, BillService>();
+builder.Services.AddScoped<IIncomeService, IncomeService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IHistoryService, HistoryService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                     .AddCookie(options =>

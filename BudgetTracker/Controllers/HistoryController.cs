@@ -1,36 +1,31 @@
-﻿using BudgetTracker.Data;
+﻿using BudgetTracker.Services.History;
 using BudgetTracker.ViewModels;
-using BudgetTracker.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace BudgetTracker.Controllers
 {
     [Authorize]
     public class HistoryController : Controller
     {
-        private readonly BudgettrackerdbContext context;
-        private readonly IDataProtector _protector;
+        private readonly IHistoryService _historyService;
 
-        public HistoryController(BudgettrackerdbContext context, IDataProtectionProvider provider)
+        public HistoryController(IHistoryService historyService)
         {
-            this.context = context;
-            _protector = provider.CreateProtector("UserIdProtector");
+            _historyService = historyService;
         }
-
-        #region Functions
 
         private int GetUserID()
         {
-            var encryptedUserId = Request.Cookies["UserId"];
-            var stringId = _protector.Unprotect(encryptedUserId);
-            return int.Parse(stringId);
-        }
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                throw new UnauthorizedAccessException("User is not authenticated.");
+            }
 
-        #endregion
+            return userId;
+        }
 
         // GET: HistoryController/GetBillIncomeAndMonthlyTotal?month=5&year=2021
         public async Task<IActionResult> GetBillIncomeAndMonthlyTotal(int month, int year)
@@ -38,41 +33,13 @@ namespace BudgetTracker.Controllers
             try
             {
                 var idUser = GetUserID();
-
-                var income = await context.Incomes
-                    .Where(i => i.IncomeDate.Month == month && i.IncomeDate.Year == year && i.UserId == idUser)
-                    .ToListAsync();
-
-                var bill = await context.Bills
-                    .Where(b => b.BillsDate.Month == month && b.BillsDate.Year == year && b.UserId == idUser)
-                    .ToListAsync();
-
-                var monthlyTotal = await context.MonthlyTotals
-                    .FirstOrDefaultAsync(mt => mt.MonthlyTotalsMonth == month && mt.MonthlyTotalsYear == year && mt.UserId == idUser);
-
-                if (monthlyTotal == null) {
-                    monthlyTotal = new MonthlyTotal
-                    {
-                        MonthlyTotalsMonth = month,
-                        MonthlyTotalsYear = year,
-                        UserId = idUser
-                    };
-                }
-
-                var historyViewModel = new HistoryViewModel
-                {
-                    Income = income,
-                    Bill = bill,
-                    MonthlyTotal = monthlyTotal
-                };
-
+                var historyViewModel = await _historyService.GetBillIncomeAndMonthlyTotalAsync(idUser, month, year);
                 return View("History", historyViewModel);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                return BadRequest(new { Message = ex.Message });
             }
         }
-
     }
 }

@@ -1,22 +1,19 @@
-﻿using BudgetTracker.Data;
-using BudgetTracker.Models;
+﻿using BudgetTracker.Models;
+using BudgetTracker.Services.User;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.DotNet.Scaffolding.Shared.Messaging;
+using System.Security.Claims;
 
 namespace BudgetTracker.Controllers
 {
     [Authorize]
     public class UserController : Controller
     {
-        private readonly BudgettrackerdbContext context;
-        private readonly IDataProtector _protector;
+        private readonly IUserService _userService;
 
-        public UserController(BudgettrackerdbContext context, IDataProtectionProvider provider)
+        public UserController(IUserService userService)
         {
-            this.context = context;
-            _protector = provider.CreateProtector("UserIdProtector");
+            _userService = userService;
         }
 
         // GET: UserController
@@ -26,26 +23,37 @@ namespace BudgetTracker.Controllers
         }
 
         // GET: UserController/GetUsers
-        public IActionResult GetUsers()
+        public async Task<IActionResult> GetUsers()
         {
-            var users = context.Users.ToList();
-            return Ok(users);
+            try
+            {
+                var users = await _userService.GetAllUsersAsync();
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         private int GetUserID()
         {
-            var encryptedUserId = Request.Cookies["UserId"];
-            var stringId = _protector.Unprotect(encryptedUserId);
-            return int.Parse(stringId);
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                throw new UnauthorizedAccessException("User is not authenticated.");
+            }
+
+            return userId;
         }
 
         // GET: UserController/Edit
-        public ActionResult Edit()
+        public async Task<ActionResult> Edit()
         {
             try
             {
                 int userId = GetUserID();
-                var user = context.Users.Find(userId);
+                var user = await _userService.GetUserByIdAsync(userId);
 
                 if (user == null)
                 {
@@ -54,9 +62,9 @@ namespace BudgetTracker.Controllers
 
                 return View(user);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                return BadRequest(new { Message = ex.Message });
             }
         }
 
@@ -73,31 +81,18 @@ namespace BudgetTracker.Controllers
                 }
 
                 int userId = GetUserID();
-                var existingUser = context.Users.Find(userId);
+                user.UserId = userId;
 
-                if (existingUser == null)
-                {
-                    return NotFound(new { Message = "User not found. Please try again." });
-                }
-
-                // Update the user properties
-                existingUser.UserName = user.UserName;
-                existingUser.UserEmail = user.UserEmail;
-
-                // Check if the password is provided
-                if (!string.IsNullOrEmpty(user.UserPassword))
-                {
-                    existingUser.UserPassword = user.UserPassword;
-                }
-
-                // Save the changes to the database
-                await context.SaveChangesAsync();
-
+                await _userService.UpdateUserAsync(user);
                 return Ok(new { Message = "Changes have been saved successfully." });
             }
-            catch
+            catch (InvalidOperationException ex)
             {
-                return BadRequest();
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
             }
         }
 
@@ -123,15 +118,16 @@ namespace BudgetTracker.Controllers
         // POST: UserController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Delete(int id, IFormCollection collection)
         {
             try
             {
+                await _userService.DeleteUserAsync(id);
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                return BadRequest(new { Message = ex.Message });
             }
         }
     }

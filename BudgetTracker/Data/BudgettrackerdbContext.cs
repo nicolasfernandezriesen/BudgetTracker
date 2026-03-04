@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using BudgetTracker.Models;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
 namespace BudgetTracker.Data;
 
@@ -33,8 +32,7 @@ public partial class BudgettrackerdbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
-            .UseCollation("utf8mb4_0900_ai_ci")
-            .HasCharSet("utf8mb4");
+            .UseCollation("utf8mb4_0900_ai_ci");
 
         modelBuilder.Entity<Bill>(entity =>
         {
