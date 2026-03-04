@@ -1,74 +1,31 @@
-﻿using BudgetTracker.Data;
-using BudgetTracker.Models;
+﻿using BudgetTracker.Services.Income;
 using BudgetTracker.ViewModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace BudgetTracker.Controllers
 {
     [Authorize]
     public class IncomeController : Controller
     {
-        private readonly BudgettrackerdbContext context;
-        private readonly IDataProtector _protector;
+        private readonly IIncomeService _incomeService;
 
-        public IncomeController(BudgettrackerdbContext context, IDataProtectionProvider provider)
+        public IncomeController(IIncomeService incomeService)
         {
-            this.context = context;
-            _protector = provider.CreateProtector("UserIdProtector");
+            _incomeService = incomeService;
         }
-
-        #region Functions
 
         private int GetUserID()
         {
-            var encryptedUserId = Request.Cookies["UserId"];
-            var stringId = _protector.Unprotect(encryptedUserId);
-            return int.Parse(stringId);
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                throw new UnauthorizedAccessException("User is not authenticated.");
+            }
+
+            return userId;
         }
-
-        private void CheckIsValid(int amount, int categoryId, DateOnly date)
-        {
-            if (date > DateOnly.FromDateTime(DateTime.Now.AddMonths(2)))
-            {
-                throw new ArgumentException("The date cannot be greater than 2 months.");
-            }
-            if (amount <= 0)
-            {
-                throw new ArgumentException("The amount of income must be greater than 0.");
-            }
-            if (categoryId == 0)
-            {
-                throw new ArgumentException("You must choose a category.");
-            }
-        }
-
-        private MonthlyTotal GetOrCreateMonthlyTotal(int month, int idUser)
-        {
-            var monthlyTotal = context.MonthlyTotals.FirstOrDefault(mt => mt.MonthlyTotalsMonth == month);
-
-            if (monthlyTotal == null)
-            {
-                monthlyTotal = new MonthlyTotal
-                {
-                    MonthlyTotalsYear = DateTime.Now.Year,
-                    MonthlyTotalsMonth = month,
-                    TotalIncome = 0,
-                    TotalBill = 0,
-                    UserId = idUser
-                };
-
-                context.MonthlyTotals.Add(monthlyTotal);
-                context.SaveChanges();
-            }
-
-            return monthlyTotal;
-        }
-
-        #endregion
 
         // GET: IncomeController
         public ActionResult Index()
@@ -82,29 +39,18 @@ namespace BudgetTracker.Controllers
             try
             {
                 var idUser = GetUserID();
-
                 DateOnly dateToSearch = DateOnly.Parse(selectedDate);
 
-                DetailBillIncomeViewModel detailBillIncomeViewModel = new DetailBillIncomeViewModel { };
-
-                var income = await context.Incomes
-                            .Include(i => i.Category)
-                            .Where(i => i.IncomeDate == dateToSearch && i.UserId == idUser)
-                            .ToListAsync();
-
-                if (income == null)
-                {
-                    return BadRequest(new { message = "The income/s does not exist." });
-                }
-
-                detailBillIncomeViewModel.Income = income;
-                detailBillIncomeViewModel.Date = dateToSearch;
-
+                var detailBillIncomeViewModel = await _incomeService.GetIncomeDetailsAsync(idUser, dateToSearch);
                 return View("Details", detailBillIncomeViewModel);
             }
-            catch (Exception)
+            catch (InvalidOperationException ex)
             {
-                throw;
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -113,67 +59,29 @@ namespace BudgetTracker.Controllers
         {
             try
             {
-                var categories = await context.Categorys
-                .Select(c => new SelectListItem
-                {
-                    Value = c.CategoryId.ToString(),
-                    Text = c.CategoryName
-                }).ToListAsync();
-
-                var viewModel = new IncomeCreateViewModel
-                {
-                    Income = new Income
-                    {
-                        IncomeDate = DateOnly.FromDateTime(DateTime.Now)
-                    },
-                    Categories = categories
-                };
-
+                var viewModel = await _incomeService.GetCreateViewModelAsync();
                 return View(viewModel);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(new { message = ex.Message });
             }
         }
 
         // POST: IncomeController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(int amount, int categoryId, string desc, DateOnly date)
+        public async Task<IActionResult> Create(int amount, int categoryId, string desc, DateOnly date)
         {
             try
             {
-                CheckIsValid(amount, categoryId, date);
-
                 int userId = GetUserID();
-
-                var income = new Income
-                {
-                    IncomeAmount = amount,
-                    CategoryId = categoryId,
-                    IncomeDesc = desc,
-                    IncomeDate = date,
-                    UserId = userId
-                };
-
-                var monthlyTotal = GetOrCreateMonthlyTotal(income.IncomeDate.Month, userId);
-
-                monthlyTotal.TotalIncome += income.IncomeAmount;
-
-                context.MonthlyTotals.Update(monthlyTotal);
-                context.Incomes.Add(income);
-                context.SaveChanges();
-
+                await _incomeService.CreateIncomeAsync(userId, amount, categoryId, desc, date);
                 return Ok(new { message = "The new income has been saved successfully." });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -185,32 +93,27 @@ namespace BudgetTracker.Controllers
                 int userId = GetUserID();
                 DateOnly date = DateOnly.Parse(selectedDate);
 
-                var categories = await context.Categorys
-                .Select(c => new SelectListItem
-                {
-                    Value = c.CategoryId.ToString(),
-                    Text = c.CategoryName
-                }).ToListAsync();
+                var income = await _incomeService.GetIncomeByUserAsync(userId);
+                var incomeItem = income.FirstOrDefault(i => i.IncomeId == id);
 
-                var income = context.Incomes
-                    .FirstOrDefault(i => i.IncomeId == id && i.UserId == userId && i.IncomeDate == date);
-
-                if (income == null)
+                if (incomeItem == null)
                 {
                     return BadRequest(new { message = "The income does not exist." });
                 }
 
+                var categories = await _incomeService.GetCreateViewModelAsync();
+                
                 var viewModel = new IncomeCreateViewModel
                 {
-                    Income = income,
-                    Categories = categories
+                    Income = incomeItem,
+                    Categories = categories.Categories
                 };
 
                 return View(viewModel);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -220,38 +123,21 @@ namespace BudgetTracker.Controllers
         {
             try
             {
-                CheckIsValid(amount, categoryId, date);
-
                 int userId = GetUserID();
-
-                var income = await context.Incomes
-                    .FirstOrDefaultAsync(b => b.UserId == userId && b.IncomeId == id);
-
-                if (income == null)
-                {
-                    return BadRequest(new { message = "The income was not found." });
-                }
-
-
-                var monthlyTotal = GetOrCreateMonthlyTotal(income.IncomeDate.Month, userId);
-                monthlyTotal.TotalIncome -= income.IncomeAmount;
-                monthlyTotal.TotalIncome += amount;
-
-                income.IncomeAmount = amount;
-                income.IncomeDesc = desc;
-                income.IncomeDate = date;
-                income.CategoryId = categoryId;
-
-                context.MonthlyTotals.Update(monthlyTotal);
-                context.Incomes.Update(income);
-                await context.SaveChangesAsync();
-
+                await _incomeService.UpdateIncomeAsync(userId, id, amount, categoryId, desc, date);
                 return Ok(new { message = "The income has been successfully updated." });
-
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -265,31 +151,16 @@ namespace BudgetTracker.Controllers
                 int userId = GetUserID();
                 DateOnly date = DateOnly.Parse(selectedDate);
 
-                var income = await context.Incomes
-                    .FirstOrDefaultAsync(b => b.IncomeId == id && b.UserId == userId && b.IncomeDate == date);
-
-                if (income == null)
-                {
-                    return BadRequest(new { message = "The income was not found." });
-                }
-
-                var monthlyTotal = await context.MonthlyTotals
-                    .FirstOrDefaultAsync(mt => mt.MonthlyTotalsMonth == income.IncomeDate.Month && mt.UserId == userId);
-
-                if (monthlyTotal != null)
-                {
-                    monthlyTotal.TotalIncome -= income.IncomeAmount;
-                    context.MonthlyTotals.Update(monthlyTotal);
-                }
-
-                context.Incomes.Remove(income);
-                await context.SaveChangesAsync();
-
+                await _incomeService.DeleteIncomeAsync(userId, id, date);
                 return Ok(new { message = "The income has been successfully deleted." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = ex.Message });
             }
         }
     }
