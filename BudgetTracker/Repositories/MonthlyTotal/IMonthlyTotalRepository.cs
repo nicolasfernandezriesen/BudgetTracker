@@ -1,10 +1,11 @@
 using System.Linq.Expressions;
+using BudgetTracker.Models;
 
-namespace BudgetTracker.Repositories.MonthlyTotal
+namespace BudgetTracker.Repositories.MonthlyTotalRepository
 {
-    public interface IMonthlyTotalRepository : IRepository<BudgetTracker.Models.MonthlyTotal>
+    public interface IMonthlyTotalRepository : IRepository<MonthlyTotal>
     {
-        Task<BudgetTracker.Models.MonthlyTotal?> GetMonthlyTotalByMonthAndUserAsync(int month, int year, int userId);
-        Task<IEnumerable<BudgetTracker.Models.MonthlyTotal>> GetMonthlyTotalsByUserAsync(int userId);
+        Task<MonthlyTotal?> GetMonthlyTotalByMonthAndUserAsync(int month, int year, int userId);
+        Task<IEnumerable<MonthlyTotal>> GetMonthlyTotalsByUserAsync(int userId);
     }
 }

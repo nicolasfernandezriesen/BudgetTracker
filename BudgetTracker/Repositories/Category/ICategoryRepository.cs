@@ -1,9 +1,10 @@
 using System.Linq.Expressions;
+using BudgetTracker.Models;
 
-namespace BudgetTracker.Repositories.Category
+namespace BudgetTracker.Repositories.CategoryRepository
 {
-    public interface ICategoryRepository : IRepository<BudgetTracker.Models.Category>
+    public interface ICategoryRepository : IRepository<Category>
     {
-        Task<BudgetTracker.Models.Category?> GetCategoryByNameAsync(string name);
+        Task<Category?> GetCategoryByNameAsync(string name);
     }
 }
