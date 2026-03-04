@@ -2,13 +2,13 @@ using BudgetTracker.Data;
 using BudgetTracker.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace BudgetTracker.Repositories.Category
+namespace BudgetTracker.Repositories.CategoryRepository
 {
-    public class CategoryRepository : Repository<BudgetTracker.Models.Category>, ICategoryRepository
+    public class CategoryRepository : Repository<Category>, ICategoryRepository
     {
         public CategoryRepository(BudgettrackerdbContext context) : base(context) { }
 
-        public async Task<BudgetTracker.Models.Category?> GetCategoryByNameAsync(string name)
+        public async Task<Category?> GetCategoryByNameAsync(string name)
         {
             return await _dbSet.FirstOrDefaultAsync(c => c.CategoryName == name);
         }

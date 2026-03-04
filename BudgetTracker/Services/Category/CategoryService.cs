@@ -1,5 +1,5 @@
 using BudgetTracker.Models;
-using BudgetTracker.Repositories.Category;
+using BudgetTracker.Repositories.CategoryRepository;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BudgetTracker.Services.Category

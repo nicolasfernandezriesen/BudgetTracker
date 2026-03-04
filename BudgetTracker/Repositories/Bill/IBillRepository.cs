@@ -1,12 +1,12 @@
-using System.Linq.Expressions;
+using BudgetTracker.Models;
 
-namespace BudgetTracker.Repositories.Bill
+namespace BudgetTracker.Repositories.BillRepository
 {
-    public interface IBillRepository : IRepository<BudgetTracker.Models.Bill>
+    public interface IBillRepository : IRepository<Bill>
     {
-        Task<IEnumerable<BudgetTracker.Models.Bill>> GetBillsByUserIdAsync(int userId);
-        Task<IEnumerable<BudgetTracker.Models.Bill>> GetBillsByUserAndDateAsync(int userId, DateOnly date);
-        Task<IEnumerable<BudgetTracker.Models.Bill>> GetBillsByMonthAsync(int userId, int month, int year);
-        Task<BudgetTracker.Models.Bill?> GetBillByIdAndUserAsync(int billId, int userId);
+        Task<IEnumerable<Bill>> GetBillsByUserIdAsync(int userId);
+        Task<IEnumerable<Bill>> GetBillsByUserAndDateAsync(int userId, DateOnly date);
+        Task<IEnumerable<Bill>> GetBillsByMonthAsync(int userId, int month, int year);
+        Task<Bill?> GetBillByIdAndUserAsync(int billId, int userId);
     }
 }

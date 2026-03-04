@@ -1,10 +1,10 @@
 using BudgetTracker.Data;
 using BudgetTracker.Models;
-using BudgetTracker.Repositories.Bill;
-using BudgetTracker.Repositories.Category;
-using BudgetTracker.Repositories.Income;
-using BudgetTracker.Repositories.MonthlyTotal;
-using BudgetTracker.Repositories.User;
+using BudgetTracker.Repositories.BillRepository;
+using BudgetTracker.Repositories.CategoryRepository;
+using BudgetTracker.Repositories.IncomeRepository;
+using BudgetTracker.Repositories.MonthlyTotalRepository;
+using BudgetTracker.Repositories.UserRepository;
 using BudgetTracker.Services.Bill;
 using BudgetTracker.Services.Category;
 using BudgetTracker.Services.History;
@@ -23,7 +23,16 @@ builder.Services.AddControllersWithViews();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string not found.");
-builder.Services.AddDbContext<BudgettrackerdbContext>(options => options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<BudgettrackerdbContext>(options =>
+    options.UseNpgsql(connectionString, npgsqlOptions =>
+    {
+        //Enables the retry strategy for transient failures
+        npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorCodesToAdd: null
+        );
+    }));
 
 // Identity hashing services
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();

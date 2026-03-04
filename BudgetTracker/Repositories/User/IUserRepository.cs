@@ -1,10 +1,10 @@
-using System.Linq.Expressions;
+using BudgetTracker.Models;
 
-namespace BudgetTracker.Repositories.User
+namespace BudgetTracker.Repositories.UserRepository
 {
-    public interface IUserRepository : IRepository<BudgetTracker.Models.User>
+    public interface IUserRepository : IRepository<User>
     {
-        Task<BudgetTracker.Models.User?> GetUserByEmailAsync(string email);
-        Task<BudgetTracker.Models.User?> GetUserByNameAsync(string name);
+        Task<User?> GetUserByEmailAsync(string email);
+        Task<User?> GetUserByNameAsync(string name);
     }
 }

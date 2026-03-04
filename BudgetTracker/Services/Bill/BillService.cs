@@ -1,7 +1,7 @@
 using BudgetTracker.Models;
-using BudgetTracker.Repositories.Bill;
-using BudgetTracker.Repositories.Category;
-using BudgetTracker.Repositories.MonthlyTotal;
+using BudgetTracker.Repositories.BillRepository;
+using BudgetTracker.Repositories.CategoryRepository;
+using BudgetTracker.Repositories.MonthlyTotalRepository;
 using BudgetTracker.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 

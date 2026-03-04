@@ -1,6 +1,6 @@
-using BudgetTracker.Repositories.Bill;
-using BudgetTracker.Repositories.Income;
-using BudgetTracker.Repositories.MonthlyTotal;
+using BudgetTracker.Repositories.BillRepository;
+using BudgetTracker.Repositories.IncomeRepository;
+using BudgetTracker.Repositories.MonthlyTotalRepository;
 using BudgetTracker.ViewModels;
 
 namespace BudgetTracker.Services.History

@@ -1,5 +1,5 @@
 using BudgetTracker.Models;
-using BudgetTracker.Repositories.User;
+using BudgetTracker.Repositories.UserRepository;
 using Microsoft.AspNetCore.Identity;
 
 namespace BudgetTracker.Services.User
