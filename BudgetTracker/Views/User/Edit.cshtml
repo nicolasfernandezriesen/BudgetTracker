@@ -1,6 +1,6 @@
 ﻿@model BudgetTracker.Models.User
 @section Scripts {
-    <script src="~/js/User/Edit.js"></script>
+    <script src="~/js/User/Edit.js" asp-append-version="true"></script>
 }
 
 <div class="d-flex flex-column justify-content-center align-items-center m-5">
@@ -17,43 +17,45 @@
     <div class="bg-secondary border rounded box-shadow" style="max-width: 75%; min-width: 50%;">
         <div class="d-flex flex-row justify-content-center align-items-center p-5">
             <h3 class="mx-5">Configuracion de usuario</h3>
+            @if (!ViewBag.UserRole.Contains("Test"))
+            {
+                <form id="editUserForm" asp-controller="User" asp-action="Edit" method="post">
+                    <div class="p-2">
+                        <label class="pb-1">Elije un campo para editar</label>
+                        <select id="editOptions" class="form-control">
+                            <option value="">-- Click aqui para selecionar una opcion --</option>
+                            <option value="UserName">Nombre de usuario</option>
+                            <option value="Email">Email</option>
+                        </select>
 
-            <form id="editUserForm" asp-controller="User" asp-action="Edit" method="post">
-                <div class="p-2">
-                    <label class="pb-1">Elije un campo para editar</label>
-                    <select id="editOptions" class="form-control">
-                        <option value="">-- Click aqui para selecionar una opcion --</option>
-                        <option value="UserName">Nombre de usuario</option>
-                        <option value="Email">Email</option>
-                    </select>
+                        <div id="UserNameSection" class="edit-section" style="display:none;">
+                            <label class="pt-2 pb-1" asp-for="UserName">Nuevo nombre de usuario</label>
+                            <input id="userName" asp-for="UserName" type="text" class="form-control" />
+                        </div>
 
-                    <div id="UserNameSection" class="edit-section" style="display:none;">
-                        <label class="pt-2 pb-1" asp-for="UserName">Nuevo nombre de usuario</label>
-                        <input id="userName" asp-for="UserName" type="text" class="form-control" />
+                        <div id="EmailSection" class="edit-section" style="display:none;">
+                            <label class="pt-2 pb-1" asp-for="Email">Nuevo email</label>
+                            <input id="userEmail" asp-for="Email" type="email" class="form-control" />
+                        </div>
                     </div>
 
-                    <div id="EmailSection" class="edit-section" style="display:none;">
-                        <label class="pt-2 pb-1" asp-for="Email">Nuevo email</label>
-                        <input id="userEmail" asp-for="Email" type="email" class="form-control" />
-                    </div>
-                </div>
-
-
-                @if (Model.Email == "test@test.com" && Model.Id == 1)
-                {
-                    <div class="alert alert-danger text-center" role="alert">
-                        <p>
-                            <strong>No se puede editar este usuario.</strong><br />
+                    <button type="button" class="btn btn-primary" id="submitBtn" onclick="sendEditUser()">Guardar</button>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-danger text-center" role="alert">
+                    <p>
+                        <strong>
+                            Este es un usuario de prueba, no tiene los permisos para esta seccion.
+                            <br />
                             Para usar estas funciones cree una cuenta.
-                        </p>
-                        <button type="button" class="btn btn-primary" id="submitBtn" onclick="goCreateUserView()" style="display:none;">Crear usuario</button>
-                    </div>
-                }
-                else
-                {
-                    <button type="button" class="btn btn-primary" id="submitBtn" onclick="sendEditUser()" style="display:none;">Guardar</button>
-                }
-            </form>
+                        </strong>
+                    </p>
+
+                    <a asp-controller="Home" asp-action="Create" class="btn btn-primary">Crear usuario</a>
+                </div>
+            }
         </div>
     </div>
 </div>

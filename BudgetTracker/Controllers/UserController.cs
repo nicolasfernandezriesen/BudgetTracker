@@ -62,6 +62,8 @@ namespace BudgetTracker.Controllers
                     return NotFound();
                 }
 
+                ViewBag.UserRole = await _userManager.GetRolesAsync(user);
+
                 return View(user);
             }
             catch (Exception ex)

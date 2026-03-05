@@ -1,26 +1,32 @@
-﻿document.getElementById('editOptions').addEventListener('change', function () {
-    const selectedOption = this.value;
-    const sections = document.querySelectorAll('.edit-section');
-    const submitBtn = document.getElementById('submitBtn');
+﻿document.addEventListener('DOMContentLoaded', function () {
+    const editOptions = document.getElementById('editOptions');
+    if (!editOptions) return;
+    
+    editOptions.addEventListener('change', function () {
+        const selectedOption = this.value;
+        const sections = document.querySelectorAll('.edit-section');
+        const submitBtn = document.getElementById('submitBtn');
 
-    // Hide all sections
-    sections.forEach(section => {
-        section.style.display = 'none';
+        // Hide all sections
+        sections.forEach(section => {
+            section.style.display = 'none';
+        });
+
+        // Show the selected section
+        if (selectedOption) {
+            document.getElementById(selectedOption + 'Section').style.display = 'block';
+            submitBtn.style.display = 'block';
+        } else {
+            submitBtn.style.display = 'none';
+        }
     });
-
-    // Show the selected section
-    if (selectedOption) {
-        document.getElementById(selectedOption + 'Section').style.display = 'block';
-        submitBtn.style.display = 'block';
-    } else {
-        submitBtn.style.display = 'none';
-    }
 });
 
 function checkValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-}
+};
+
 async function sendEditUser() {
     const form = document.getElementById('editUserForm');
     const formData = new FormData(form);
@@ -54,8 +60,4 @@ async function sendEditUser() {
     } finally {
         Swal.close();
     }
-}
-
-function goCreateUserView() {
-    window.location.href = '/Home/Create';
-}
+};
