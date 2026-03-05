@@ -7,14 +7,14 @@ namespace BudgetTracker.Services.User
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IPasswordHasher<BudgetTracker.Models.User> _passwordHasher;
+        private readonly UserManager<Models.User> _userManager;
 
         public UserService(
             IUserRepository userRepository,
-            IPasswordHasher<BudgetTracker.Models.User> passwordHasher)
+            UserManager<Models.User> userManager)
         {
             _userRepository = userRepository;
-            _passwordHasher = passwordHasher;
+            _userManager = userManager;
         }
 
         public async Task<Models.User?> GetUserByIdAsync(int userId)
@@ -37,78 +37,28 @@ namespace BudgetTracker.Services.User
             return await _userRepository.GetUserByNameAsync(name);
         }
 
-        public async Task<Models.User?> ValidateCredentialsAsync(string email, string password)
-        {
-            var user = await _userRepository.GetUserByEmailAsync(email);
-            if (user == null)
-            {
-                return null;
-            }
-
-            var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.UserPassword, password);
-            if (verificationResult == PasswordVerificationResult.Success ||
-                verificationResult == PasswordVerificationResult.SuccessRehashNeeded)
-            {
-                if (verificationResult == PasswordVerificationResult.SuccessRehashNeeded)
-                {
-                    user.UserPassword = _passwordHasher.HashPassword(user, password);
-                    _userRepository.Update(user);
-                    await _userRepository.SaveChangesAsync();
-                }
-
-                return user;
-            }
-
-            return null;
-        }
-
-        public async Task CreateUserAsync(Models.User user)
-        {
-            if (string.IsNullOrWhiteSpace(user.UserEmail))
-            {
-                throw new ArgumentException("Email cannot be empty.");
-            }
-
-            var existingUser = await _userRepository.GetUserByEmailAsync(user.UserEmail);
-            if (existingUser != null)
-            {
-                throw new InvalidOperationException("A user with this email already exists.");
-            }
-
-            if (string.IsNullOrWhiteSpace(user.UserPassword))
-            {
-                throw new ArgumentException("Password cannot be empty.");
-            }
-
-            user.UserPassword = _passwordHasher.HashPassword(user, user.UserPassword);
-
-            await _userRepository.AddAsync(user);
-            await _userRepository.SaveChangesAsync();
-        }
-
         public async Task UpdateUserAsync(Models.User user)
         {
-            if (user.UserId <= 0)
+            if (user.Id <= 0)
             {
                 throw new ArgumentException("User ID must be valid.");
             }
 
-            var existingUser = await _userRepository.GetByIdAsync(user.UserId);
+            var existingUser = await _userRepository.GetByIdAsync(user.Id);
             if (existingUser == null)
             {
                 throw new InvalidOperationException("User not found.");
             }
 
             existingUser.UserName = user.UserName;
-            existingUser.UserEmail = user.UserEmail;
+            existingUser.Email = user.Email;
 
-            if (!string.IsNullOrEmpty(user.UserPassword))
+            var result = await _userManager.UpdateAsync(existingUser);
+            if (!result.Succeeded)
             {
-                existingUser.UserPassword = _passwordHasher.HashPassword(existingUser, user.UserPassword);
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to update user: {errors}");
             }
-
-            _userRepository.Update(existingUser);
-            await _userRepository.SaveChangesAsync();
         }
 
         public async Task DeleteUserAsync(int userId)
@@ -119,8 +69,12 @@ namespace BudgetTracker.Services.User
                 throw new InvalidOperationException("User not found.");
             }
 
-            _userRepository.Remove(user);
-            await _userRepository.SaveChangesAsync();
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to delete user: {errors}");
+            }
         }
     }
 }

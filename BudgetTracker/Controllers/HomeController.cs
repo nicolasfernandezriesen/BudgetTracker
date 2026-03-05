@@ -1,36 +1,26 @@
 using BudgetTracker.Models;
 using BudgetTracker.Services.User;
 using BudgetTracker.ViewModels;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using System.Security.Claims;
 
 namespace BudgetTracker.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IUserService _userService;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public HomeController(ILogger<HomeController> logger, IUserService userService)
+        public HomeController(
+            ILogger<HomeController> logger,
+            UserManager<User> userManager,
+            SignInManager<User> signInManager)
         {
             _logger = logger;
-            _userService = userService;
-        }
-
-        private ClaimsPrincipal CreateUserPrincipal(User user)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email, user.UserEmail)
-            };
-
-            var userIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            return new ClaimsPrincipal(userIdentity);
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         // GET: HomeController/Index
@@ -39,14 +29,14 @@ namespace BudgetTracker.Controllers
             return View();
         }
 
-        // GET: UserController/Create
+        // GET: HomeController/Create
         public async Task<IActionResult> Create()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await _signInManager.SignOutAsync();
             return View();
         }
 
-        // POST: UserController/Create
+        // POST: HomeController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(string username, string email, string password)
@@ -61,23 +51,20 @@ namespace BudgetTracker.Controllers
                 var newUser = new User
                 {
                     UserName = username,
-                    UserEmail = email,
-                    UserPassword = password
+                    Email = email
                 };
 
-                await _userService.CreateUserAsync(newUser);
+                var result = await _userManager.CreateAsync(newUser, password);
+                if (!result.Succeeded)
+                {
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    return BadRequest(new { Message = $"User registration failed: {errors}" });
+                }
 
-                var userPrincipal = CreateUserPrincipal(newUser);
-                await HttpContext.SignInAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme,
-                    userPrincipal,
-                    new AuthenticationProperties { IsPersistent = true });
+                await _userManager.AddToRoleAsync(newUser, "User");
 
+                await _signInManager.SignInAsync(newUser, isPersistent: true);
                 return Ok(new { Message = "User registered successfully." });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { Message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -104,30 +91,55 @@ namespace BudgetTracker.Controllers
             return View();
         }
 
-        // POST: UserController/Login
+        // POST: HomeController/Login
         [HttpPost]
-        public async Task<IActionResult> Login(User userToLogin)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(string email, string password)
         {
-            var user = await _userService.ValidateCredentialsAsync(userToLogin.UserEmail, userToLogin.UserPassword);
-            if (user == null)
+            try
             {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    return BadRequest(new { Message = "Invalid mail." });
+                }
+
+                var result = await _signInManager.PasswordSignInAsync(user.UserName, password, isPersistent: true, lockoutOnFailure: true);
+
+                if (result.Succeeded)
+                {
+                    return Ok(new { Message = "Login successful." });
+                }
+
+                if (result.IsLockedOut)
+                {
+                    return BadRequest(new { Message = "Account is locked due to multiple failed login attempts." });
+                }
+
+                if (result.RequiresTwoFactor)
+                {
+                    return BadRequest(new { Message = "Two-factor authentication is required." });
+                }
+
                 return BadRequest(new { Message = "Invalid credentials." });
             }
-
-            var userPrincipal = CreateUserPrincipal(user);
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                userPrincipal,
-                new AuthenticationProperties { IsPersistent = true });
-
-            return Ok("Credentials verified");
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         // GET: HomeController/Logout
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await _signInManager.SignOutAsync();
             return RedirectToAction("Index");
+        }
+
+        // GET: HomeController/AccessDenied
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

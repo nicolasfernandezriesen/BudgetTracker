@@ -10,7 +10,7 @@ using BudgetTracker.Services.Category;
 using BudgetTracker.Services.History;
 using BudgetTracker.Services.Income;
 using BudgetTracker.Services.User;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -34,8 +34,60 @@ builder.Services.AddDbContext<BudgettrackerdbContext>(options =>
         );
     }));
 
-// Identity hashing services
-builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+// Configure ASP.NET Core Identity
+builder.Services.AddIdentity<User, IdentityRole<int>>()
+    .AddEntityFrameworkStores<BudgettrackerdbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    // Password settings
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 6;
+
+    // Lockout settings
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers = true;
+
+    // User settings
+    options.User.RequireUniqueEmail = true;
+});
+
+// Configure authentication
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    // Specify where to redirect un-authenticated users
+    options.LoginPath = "/Home/Login";
+    options.LogoutPath = "/Home/Logout";
+    options.AccessDeniedPath = "/Home/AccessDenied";
+
+    // Specify the name of the auth cookie
+    options.Cookie.Name = "userLoged";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.ExpireTimeSpan = TimeSpan.FromDays(14);
+});
+
+// Configure DataProtection for Render.com
+if (!builder.Environment.IsDevelopment())
+{
+    // For Render.com, we need to store DataProtection keys in a persistent directory
+    // Render uses volumes for persistent storage
+    var keyPath = Environment.GetEnvironmentVariable("DATA_PROTECTION_PATH") 
+        ?? "/tmp/data_protection_keys";
+    
+    if (!Directory.Exists(keyPath))
+    {
+        Directory.CreateDirectory(keyPath);
+    }
+    
+    builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(new DirectoryInfo(keyPath));
+}
 
 // Register Repositories
 builder.Services.AddScoped<IBillRepository, BillRepository>();
@@ -50,16 +102,6 @@ builder.Services.AddScoped<IIncomeService, IncomeService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IHistoryService, HistoryService>();
-
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                    .AddCookie(options =>
-                    {
-                        // Specify where to redirect un-authenticated users
-                        options.LoginPath = "/";
-
-                        // Specify the name of the auth cookie.
-                        options.Cookie.Name = "userLoged";
-                    });
 
 // Set the default culture
 var defaultCulture = new CultureInfo("es-AR");

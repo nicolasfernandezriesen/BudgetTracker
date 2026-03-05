@@ -1,8 +1,9 @@
-﻿using BudgetTracker.Services.Income;
+﻿using BudgetTracker.Models;
+using BudgetTracker.Services.Income;
 using BudgetTracker.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace BudgetTracker.Controllers
 {
@@ -10,21 +11,23 @@ namespace BudgetTracker.Controllers
     public class IncomeController : Controller
     {
         private readonly IIncomeService _incomeService;
+        private readonly UserManager<User> _userManager;
 
-        public IncomeController(IIncomeService incomeService)
+        public IncomeController(IIncomeService incomeService, UserManager<User> userManager)
         {
             _incomeService = incomeService;
+            _userManager = userManager;
         }
 
-        private int GetUserID()
+        private async Task<int> GetUserIDAsync()
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdClaim, out var userId))
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
             {
                 throw new UnauthorizedAccessException("User is not authenticated.");
             }
 
-            return userId;
+            return user.Id;
         }
 
         // GET: IncomeController
@@ -38,7 +41,7 @@ namespace BudgetTracker.Controllers
         {
             try
             {
-                var idUser = GetUserID();
+                var idUser = await GetUserIDAsync();
                 DateOnly dateToSearch = DateOnly.Parse(selectedDate);
 
                 var detailBillIncomeViewModel = await _incomeService.GetIncomeDetailsAsync(idUser, dateToSearch);
@@ -75,7 +78,7 @@ namespace BudgetTracker.Controllers
         {
             try
             {
-                int userId = GetUserID();
+                int userId = await GetUserIDAsync();
                 await _incomeService.CreateIncomeAsync(userId, amount, categoryId, desc, date);
                 return Ok(new { message = "The new income has been saved successfully." });
             }
@@ -90,7 +93,7 @@ namespace BudgetTracker.Controllers
         {
             try
             {
-                int userId = GetUserID();
+                int userId = await GetUserIDAsync();
                 DateOnly date = DateOnly.Parse(selectedDate);
 
                 var income = await _incomeService.GetIncomeByUserAsync(userId);
@@ -123,7 +126,7 @@ namespace BudgetTracker.Controllers
         {
             try
             {
-                int userId = GetUserID();
+                int userId = await GetUserIDAsync();
                 await _incomeService.UpdateIncomeAsync(userId, id, amount, categoryId, desc, date);
                 return Ok(new { message = "The income has been successfully updated." });
             }
@@ -148,7 +151,7 @@ namespace BudgetTracker.Controllers
         {
             try
             {
-                int userId = GetUserID();
+                int userId = await GetUserIDAsync();
                 DateOnly date = DateOnly.Parse(selectedDate);
 
                 await _incomeService.DeleteIncomeAsync(userId, id, date);

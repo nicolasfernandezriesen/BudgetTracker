@@ -1,6 +1,18 @@
-﻿function checkValidEmail(email) {
+﻿function checkValidData(dataObject) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    if (!emailRegex.test(dataObject['email']) || dataObject['email'].trim() === '') {
+        throw new Error('El email no es valido.');
+    }
+    if (dataObject['username'].trim() === '') {
+        throw new Error('El nombre de usuario no puede estar vacío.');
+    }
+    if (dataObject['password'].length < 6) {
+        throw new Error('La contraseña debe tener al menos 6 caracteres.');
+    }
+    if (dataObject['password'] !== dataObject['confirmPassword']) {
+        throw new Error('Las contraseñas no coinciden.');
+    }
+    return;
 }
 
 async function CreateUser() {
@@ -13,9 +25,7 @@ async function CreateUser() {
     });
 
     try {
-        if (!checkValidEmail(dataObject['email'])) {
-            throw new Error('El email no es valido.');
-        }
+        checkValidData(dataObject);
 
         const loadingSwal = showLoadingAlert('Creando usuario');
 
@@ -25,7 +35,7 @@ async function CreateUser() {
         });
 
         const data = await response.json();
-
+        console.log('Respuesta del servidor:', data);
         if (response.ok) {
             await showSuccessAlert('¡Éxito!', 'Usuario creado correctamente.');
 
