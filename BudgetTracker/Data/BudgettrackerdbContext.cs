@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using BudgetTracker.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BudgetTracker.Data;
 
-public partial class BudgettrackerdbContext : DbContext
+public partial class BudgettrackerdbContext : IdentityDbContext<User, IdentityRole<int>, int>
 {
     private readonly IConfiguration _configuration;
     public BudgettrackerdbContext(IConfiguration configuration)
@@ -21,8 +23,6 @@ public partial class BudgettrackerdbContext : DbContext
 
     public virtual DbSet<MonthlyTotal> MonthlyTotals { get; set; }
 
-    public virtual DbSet<User> Users { get; set; }
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var connectionString = _configuration.GetConnectionString("DefaultConnection");
@@ -31,6 +31,8 @@ public partial class BudgettrackerdbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder
             .UseCollation("utf8mb4_0900_ai_ci");
 
@@ -134,23 +136,27 @@ public partial class BudgettrackerdbContext : DbContext
                 .HasConstraintName("monthly_totals_ibfk_1");
         });
 
+        // Configure User table mapping
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PRIMARY");
-
             entity.ToTable("users");
 
-            entity.Property(e => e.UserId).HasColumnName("user_id");
-            entity.Property(e => e.UserEmail)
-                .HasMaxLength(250)
-                .HasColumnName("user_email");
-            entity.Property(e => e.UserName)
-                .HasMaxLength(50)
-                .HasColumnName("user_name");
-            entity.Property(e => e.UserPassword)
-                .HasMaxLength(250)
-                .HasColumnName("user_password");
-            entity.HasIndex(e => e.UserEmail).IsUnique().HasDatabaseName("user_email");
+            entity.Property(e => e.Id).HasColumnName("user_id");
+            entity.Property(e => e.UserName).HasColumnName("user_name");
+            entity.Property(e => e.NormalizedUserName).HasColumnName("normalized_user_name");
+            entity.Property(e => e.Email).HasColumnName("user_email");
+            entity.Property(e => e.NormalizedEmail).HasColumnName("normalized_email");
+            entity.Property(e => e.EmailConfirmed).HasColumnName("email_confirmed");
+            entity.Property(e => e.PasswordHash).HasColumnName("user_password");
+            entity.Property(e => e.SecurityStamp).HasColumnName("security_stamp");
+            entity.Property(e => e.ConcurrencyStamp).HasColumnName("concurrency_stamp");
+            entity.Property(e => e.PhoneNumber).HasColumnName("phone_number");
+            entity.Property(e => e.PhoneNumberConfirmed).HasColumnName("phone_number_confirmed");
+            entity.Property(e => e.TwoFactorEnabled).HasColumnName("two_factor_enabled");
+            entity.Property(e => e.LockoutEnd).HasColumnName("lockout_end");
+            entity.Property(e => e.LockoutEnabled).HasColumnName("lockout_enabled");
+            entity.Property(e => e.AccessFailedCount).HasColumnName("access_failed_count");
+            entity.HasIndex(e => e.Email).IsUnique().HasDatabaseName("user_email");
             entity.HasIndex(e => e.UserName).IsUnique().HasDatabaseName("user_name");
         });
 

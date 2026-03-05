@@ -10,7 +10,7 @@ namespace BudgetTracker.Repositories.UserRepository
 
         public async Task<User?> GetUserByEmailAsync(string email)
         {
-            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(u => u.UserEmail == email);
+            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<User?> GetUserByNameAsync(string name)

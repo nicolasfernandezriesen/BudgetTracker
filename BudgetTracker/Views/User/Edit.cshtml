@@ -24,8 +24,7 @@
                     <select id="editOptions" class="form-control">
                         <option value="">-- Click aqui para selecionar una opcion --</option>
                         <option value="UserName">Nombre de usuario</option>
-                        <option value="UserEmail">Email</option>
-                        <option value="UserPassword">Contraseña</option>
+                        <option value="Email">Email</option>
                     </select>
 
                     <div id="UserNameSection" class="edit-section" style="display:none;">
@@ -33,19 +32,14 @@
                         <input id="userName" asp-for="UserName" type="text" class="form-control" />
                     </div>
 
-                    <div id="UserEmailSection" class="edit-section" style="display:none;">
-                        <label class="pt-2 pb-1" asp-for="UserEmail">Nuevo email</label>
-                        <input id="userEmail" asp-for="UserEmail" type="email" class="form-control" />
-                    </div>
-
-                    <div id="UserPasswordSection" class="edit-section" style="display:none;">
-                        <label class="pt-2 pb-1" asp-for="UserPassword">Nueva contraseña</label>
-                        <input id="userPassword" asp-for="UserPassword" type="password" class="form-control" />
+                    <div id="EmailSection" class="edit-section" style="display:none;">
+                        <label class="pt-2 pb-1" asp-for="Email">Nuevo email</label>
+                        <input id="userEmail" asp-for="Email" type="email" class="form-control" />
                     </div>
                 </div>
 
 
-                @if (Model.UserEmail == "test@test.com" && Model.UserId == 1)
+                @if (Model.Email == "test@test.com" && Model.Id == 1)
                 {
                     <div class="alert alert-danger text-center" role="alert">
                         <p>

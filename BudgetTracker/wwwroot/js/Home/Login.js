@@ -13,9 +13,8 @@ async function LoginUser() {
     formData.forEach((value, key) => {
         dataObject[key] = value;
     });
-
     try {
-        if (!checkValidEmail(dataObject['UserEmail'])) {
+        if (!checkValidEmail(dataObject['email'])) {
             throw new Error('El email no es valido.');
         }
 
@@ -27,7 +26,7 @@ async function LoginUser() {
         if (response.ok) {
             showSuccessAlert('Verificado', 'Te has logeado correctamente.');
 
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 1500));
             Swal.close();
 
             window.location.href = '/User';
@@ -35,7 +34,10 @@ async function LoginUser() {
             throw new Error('Credenciales no validas.');
         }
     } catch (error) {
-        await showErrorAlert("Error", error.message);
+        showErrorAlert("Error", error.message);
+
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        Swal.close();
     } finally {
         Swal.close();
     }

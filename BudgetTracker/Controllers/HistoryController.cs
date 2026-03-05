@@ -1,8 +1,9 @@
-﻿using BudgetTracker.Services.History;
+﻿using BudgetTracker.Models;
+using BudgetTracker.Services.History;
 using BudgetTracker.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace BudgetTracker.Controllers
 {
@@ -10,21 +11,23 @@ namespace BudgetTracker.Controllers
     public class HistoryController : Controller
     {
         private readonly IHistoryService _historyService;
+        private readonly UserManager<User> _userManager;
 
-        public HistoryController(IHistoryService historyService)
+        public HistoryController(IHistoryService historyService, UserManager<User> userManager)
         {
             _historyService = historyService;
+            _userManager = userManager;
         }
 
-        private int GetUserID()
+        private async Task<int> GetUserIDAsync()
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdClaim, out var userId))
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
             {
                 throw new UnauthorizedAccessException("User is not authenticated.");
             }
 
-            return userId;
+            return user.Id;
         }
 
         // GET: HistoryController/GetBillIncomeAndMonthlyTotal?month=5&year=2021
@@ -32,7 +35,7 @@ namespace BudgetTracker.Controllers
         {
             try
             {
-                var idUser = GetUserID();
+                var idUser = await GetUserIDAsync();
                 var historyViewModel = await _historyService.GetBillIncomeAndMonthlyTotalAsync(idUser, month, year);
                 return View("History", historyViewModel);
             }

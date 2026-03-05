@@ -1,8 +1,8 @@
 ﻿using BudgetTracker.Models;
 using BudgetTracker.Services.User;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace BudgetTracker.Controllers
 {
@@ -10,10 +10,12 @@ namespace BudgetTracker.Controllers
     public class UserController : Controller
     {
         private readonly IUserService _userService;
+        private readonly UserManager<User> _userManager;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, UserManager<User> userManager)
         {
             _userService = userService;
+            _userManager = userManager;
         }
 
         // GET: UserController
@@ -36,15 +38,15 @@ namespace BudgetTracker.Controllers
             }
         }
 
-        private int GetUserID()
+        private async Task<int> GetUserIDAsync()
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdClaim, out var userId))
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
             {
                 throw new UnauthorizedAccessException("User is not authenticated.");
             }
 
-            return userId;
+            return user.Id;
         }
 
         // GET: UserController/Edit
@@ -52,7 +54,7 @@ namespace BudgetTracker.Controllers
         {
             try
             {
-                int userId = GetUserID();
+                int userId = await GetUserIDAsync();
                 var user = await _userService.GetUserByIdAsync(userId);
 
                 if (user == null)
@@ -75,13 +77,13 @@ namespace BudgetTracker.Controllers
         {
             try
             {
-                if (!IsValidEmail(user.UserEmail))
+                if (!IsValidEmail(user.Email))
                 {
                     return BadRequest(new { Message = "The email is not valid." });
                 }
 
-                int userId = GetUserID();
-                user.UserId = userId;
+                int userId = await GetUserIDAsync();
+                user.Id = userId;
 
                 await _userService.UpdateUserAsync(user);
                 return Ok(new { Message = "Changes have been saved successfully." });

@@ -8,17 +8,15 @@
         <div class="from-create-user">
             <form id="loginUserForm" asp-controller="Home" class="container" asp-action="Login" method="post">
                 <div class="row mb-3">
-                    <label asp-for="UserEmail" class="col-sm-3 col-form-label">Email:</label>
+                    <label for="email" class="col-sm-3 col-form-label">Email:</label>
                     <div class="col-sm-9">
-                        <input asp-for="UserEmail" type="email" class="form-control" required>
-                        <span asp-validation-for="UserEmail" class="text-danger"></span>
+                        <input id="email" type="email" class="form-control" name="email" required>
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <label asp-for="UserPassword" class="col-sm-3 col-form-label">Contraseña:</label>
+                    <label for="password" class="col-sm-3 col-form-label">Contraseña:</label>
                     <div class="col-sm-9">
-                        <input asp-for="UserPassword" type="password" class="form-control" required>
-                        <span asp-validation-for="UserPassword" class="text-danger"></span>
+                        <input id="password" type="password" class="form-control" name="password" required>
                     </div>
                 </div>
 
@@ -39,5 +37,5 @@
     </div>
 
 @section Scripts {
-        <script src="~/js/Home/Login.js"></script>
+        <script src="~/js/Home/Login.js" asp-append-version="true"></script>
 }
