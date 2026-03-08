@@ -1,4 +1,5 @@
 using BudgetTracker.Models;
+using BudgetTracker.ViewModels.User;
 
 namespace BudgetTracker.Services.User
 {
@@ -8,7 +9,7 @@ namespace BudgetTracker.Services.User
         Task<IEnumerable<BudgetTracker.Models.User>> GetAllUsersAsync();
         Task<BudgetTracker.Models.User?> GetUserByEmailAsync(string email);
         Task<BudgetTracker.Models.User?> GetUserByNameAsync(string name);
-        Task UpdateUserAsync(BudgetTracker.Models.User user);
+        Task UpdateUserAsync(EditViewModel user, int userId);
         Task DeleteUserAsync(int userId);
     }
 }

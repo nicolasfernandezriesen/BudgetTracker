@@ -22,16 +22,42 @@
     });
 });
 
-function checkValidEmail(email) {
+function checkValidData(dataObject) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    const digitRegex = /\d/;
+    const errors = [];
+
+    if (!emailRegex.test(dataObject['Email']) || dataObject['Email'].trim() === '') {
+        errors.push('El email no es valido.');
+    }
+    if (dataObject['UserName'].trim() === '') {
+        errors.push('El nombre de usuario no puede estar vacío.');
+    }
+    if (dataObject['Password'] > 0) {
+        if (dataObject['Password'] && dataObject['Password'].length < 6) {
+            errors.push('La contraseña debe tener al menos 6 caracteres.');
+        }
+        if (dataObject['Password'] && !digitRegex.test(dataObject['Password'])) {
+            errors.push('La contraseña debe contener al menos un número.');
+        }
+        if (dataObject['Password'] && dataObject['Password'] !== dataObject['ConfirmPassword']) {
+            errors.push('Las contraseñas no coinciden.');
+        }
+        if (dataObject['OldPassword'].trim() === '') {
+            errors.push('La contraseña actual es obligatoria.');
+        }
+    }
+
+    if (errors.length > 0) {
+        throw new Error(errors.join('\n')); 
+    }
+
+    return;
 };
 
 async function sendEditUser() {
     const form = document.getElementById('editUserForm');
     const formData = new FormData(form);
-
-    const loadingSwal = showLoadingAlert();
 
     const dataObject = {};
     formData.forEach((value, key) => {
@@ -39,23 +65,28 @@ async function sendEditUser() {
     });
 
     try {
-        if (!checkValidEmail(dataObject['UserEmail'])) {
-            throw new Error('El email no es valido.');
-        }
+        checkValidData(dataObject);
+
+        const loadingSwal = showLoadingAlert();
 
         const response = await fetch('/User/Edit', {
             method: 'POST',
             body: formData
         });
+        const data = await response.json();
 
         if (response.ok) {
-            await showSuccessAlert("Guardado", "Los cambios se guardaron con exito.");
+            Swal.close();
+
+            await showSuccessAlert("Guardado", data.message);
 
             window.location.href = '/User';
         } else {
-            throw new Error('Error al guardar los datos. Intentelo de nuevo.');
+            throw new Error(data.message);
         }
     } catch (error) {
+        Swal.close();
+
         await showErrorAlert("Error", error.message);
     } finally {
         Swal.close();

@@ -3,7 +3,9 @@
         title: title || '¡Éxito!',
         text: text || 'Operación realizada correctamente.',
         icon: 'success',
-        confirmButtonText: 'OK'
+        confirmButtonText: 'OK',
+        timer: 3000,
+        timerProgressBar: true,
     });
 };
 
