@@ -1,6 +1,7 @@
 using BudgetTracker.Models;
 using BudgetTracker.Services.User;
 using BudgetTracker.ViewModels;
+using BudgetTracker.ViewModels.User;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -39,49 +40,36 @@ namespace BudgetTracker.Controllers
         // POST: HomeController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(string username, string email, string password)
+        public async Task<IActionResult> Create([FromForm] CreateViewModel createUser)
         {
+            if (!ModelState.IsValid) {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                return BadRequest(new { Message = string.Join("\n\n ", errors) });
+            }
+
             try
             {
-                if (!IsValidEmail(email))
-                {
-                    return BadRequest(new { Message = "The email is not valid." });
-                }
-
                 var newUser = new User
                 {
-                    UserName = username,
-                    Email = email
+                    UserName = createUser.UserName,
+                    Email = createUser.Email
                 };
 
-                var result = await _userManager.CreateAsync(newUser, password);
+                var result = await _userManager.CreateAsync(newUser, createUser.Password);
                 if (!result.Succeeded)
                 {
                     var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                    return BadRequest(new { Message = $"User registration failed: {errors}" });
+                    return BadRequest(new { Message = $"El registro del usuario falló: {errors}" });
                 }
 
                 await _userManager.AddToRoleAsync(newUser, "User");
 
                 await _signInManager.SignInAsync(newUser, isPersistent: true);
-                return Ok(new { Message = "User registered successfully." });
+                return Ok(new { Message = "Usuario registrado exitosamente." });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { Message = ex.Message });
-            }
-        }
-
-        private bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
             }
         }
 
@@ -94,34 +82,39 @@ namespace BudgetTracker.Controllers
         // POST: HomeController/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string email, string password)
+        public async Task<IActionResult> Login([FromForm] LoginViewModel loginUser)
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                return BadRequest(new { Message = string.Join("\n\n ", errors) });
+            }
+
             try
             {
-                var user = await _userManager.FindByEmailAsync(email);
+                var user = await _userManager.FindByEmailAsync(loginUser.Email);
                 if (user == null)
                 {
-                    return BadRequest(new { Message = "Invalid mail." });
+                    return BadRequest(new { Message = "No se encontro el usuario." });
                 }
 
-                var result = await _signInManager.PasswordSignInAsync(user.UserName, password, isPersistent: true, lockoutOnFailure: true);
-
+                var result = await _signInManager.PasswordSignInAsync(user.UserName, loginUser.Password, isPersistent: true, lockoutOnFailure: true);
                 if (result.Succeeded)
                 {
-                    return Ok(new { Message = "Login successful." });
+                    return Ok(new { Message = "Se ha iniciado sesión correctamente." });
                 }
 
                 if (result.IsLockedOut)
                 {
-                    return BadRequest(new { Message = "Account is locked due to multiple failed login attempts." });
+                    return BadRequest(new { Message = "La cuenta está bloqueada debido a múltiples intentos fallidos de inicio de sesión." });
                 }
 
                 if (result.RequiresTwoFactor)
                 {
-                    return BadRequest(new { Message = "Two-factor authentication is required." });
+                    return BadRequest(new { Message = "Se requiere autenticación de dos factores." });
                 }
 
-                return BadRequest(new { Message = "Invalid credentials." });
+                return BadRequest(new { Message = "Credenciales no validas." });
             }
             catch (Exception ex)
             {

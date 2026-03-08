@@ -1,17 +1,32 @@
 ﻿function checkValidData(dataObject) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(dataObject['email']) || dataObject['email'].trim() === '') {
-        throw new Error('El email no es valido.');
+    const digitRegex = /\d/;
+    const errors = [];
+
+    if (!emailRegex.test(dataObject['Email']) || dataObject['Email'].trim() === '') {
+        errors.push('El email no es valido.');
     }
-    if (dataObject['username'].trim() === '') {
-        throw new Error('El nombre de usuario no puede estar vacío.');
+
+    if (dataObject['UserName'].trim() === '') {
+        errors.push('El nombre de usuario no puede estar vacío.');
     }
-    if (dataObject['password'].length < 6) {
-        throw new Error('La contraseña debe tener al menos 6 caracteres.');
+
+    if (dataObject['Password'].length < 6) {
+        errors.push('La contraseña debe tener al menos 6 caracteres.');
     }
-    if (dataObject['password'] !== dataObject['confirmPassword']) {
-        throw new Error('Las contraseñas no coinciden.');
+
+    if (!digitRegex.test(dataObject['Password'])) {
+        errors.push('La contraseña debe contener al menos un número.');
     }
+
+    if (dataObject['Password'] !== dataObject['ConfirmPassword']) {
+        errors.push('Las contraseñas no coinciden.');
+    }
+
+    if (errors.length > 0) {
+        throw new Error(errors.join('\n'));
+    }
+
     return;
 }
 
@@ -33,17 +48,20 @@ async function CreateUser() {
             method: 'POST',
             body: formData
         });
-
         const data = await response.json();
-        console.log('Respuesta del servidor:', data);
+
         if (response.ok) {
-            await showSuccessAlert('¡Éxito!', 'Usuario creado correctamente.');
+            Swal.close();
+
+            await showSuccessAlert('¡Éxito!', data.message);
 
             window.location.href = '/User';
         } else {
-            throw new Error('Ah ocurrido un error, vuelve a intertarlo, si el error persiste, contacte a soporte.');
+            throw new Error(data.message);
         }
     } catch (error) {
+        Swal.close();
+
         await showErrorAlert("Error", error.message);
     } finally {
         Swal.close();

@@ -1,4 +1,4 @@
-﻿@model User
+﻿@model BudgetTracker.ViewModels.User.LoginViewModel
 
 <div class="d-flex flex-column justify-content-center align-items-center" style="height: 50vh;">
 
@@ -10,13 +10,15 @@
                 <div class="row mb-3">
                     <label for="email" class="col-sm-3 col-form-label">Email:</label>
                     <div class="col-sm-9">
-                        <input id="email" type="email" class="form-control" name="email" required>
+                        <input asp-for="Email" class="form-control">
+                        <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <label for="password" class="col-sm-3 col-form-label">Contraseña:</label>
                     <div class="col-sm-9">
-                        <input id="password" type="password" class="form-control" name="password" required>
+                        <input asp-for="Password" class="form-control">
+                        <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
                 </div>
 

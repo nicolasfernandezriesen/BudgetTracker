@@ -7,37 +7,39 @@ async function LoginUser() {
     const form = document.getElementById('loginUserForm');
     const formData = new FormData(form);
 
-    const loadingSwal = showLoadingAlert('Iniciando sesion');
-
     const dataObject = {};
     formData.forEach((value, key) => {
         dataObject[key] = value;
     });
     try {
-        if (!checkValidEmail(dataObject['email'])) {
+        if (dataObject['Email'] === '' || dataObject['Password'] === '') {
+            throw new Error('Todos los campos son obligatorios.');
+        }
+        if (!checkValidEmail(dataObject['Email'])) {
             throw new Error('El email no es valido.');
         }
+
+        const loadingSwal = showLoadingAlert('Iniciando sesion');
 
         const response = await fetch('/Home/Login', {
             method: 'POST',
             body: formData
         });
+        const responseData = await response.json();
 
         if (response.ok) {
-            showSuccessAlert('Verificado', 'Te has logeado correctamente.');
-
-            await new Promise(resolve => setTimeout(resolve, 1500));
             Swal.close();
+
+            await showSuccessAlert('Verificado', responseData.message);
 
             window.location.href = '/User';
         } else {
-            throw new Error('Credenciales no validas.');
+            throw new Error(responseData.message);
         }
     } catch (error) {
-        showErrorAlert("Error", error.message);
-
-        await new Promise(resolve => setTimeout(resolve, 1500));
         Swal.close();
+
+        await showErrorAlert("Error", error.message);
     } finally {
         Swal.close();
     }

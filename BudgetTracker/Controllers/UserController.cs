@@ -1,8 +1,10 @@
 ﻿using BudgetTracker.Models;
+using BudgetTracker.ViewModels.User;
 using BudgetTracker.Services.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace BudgetTracker.Controllers
 {
@@ -64,7 +66,13 @@ namespace BudgetTracker.Controllers
 
                 ViewBag.UserRole = await _userManager.GetRolesAsync(user);
 
-                return View(user);
+                EditViewModel editViewModel = new EditViewModel
+                {
+                    Email = user.Email,
+                    UserName = user.UserName
+                };
+
+                return View(editViewModel);
             }
             catch (Exception ex)
             {
@@ -75,20 +83,20 @@ namespace BudgetTracker.Controllers
         // POST: UserController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(User user)
+        public async Task<IActionResult> Edit([FromForm] EditViewModel editViewModel)
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                return BadRequest(new { Message = string.Join("\n\n ", errors) });
+            }
+
             try
             {
-                if (!IsValidEmail(user.Email))
-                {
-                    return BadRequest(new { Message = "The email is not valid." });
-                }
-
                 int userId = await GetUserIDAsync();
-                user.Id = userId;
+                await _userService.UpdateUserAsync(editViewModel, userId);
 
-                await _userService.UpdateUserAsync(user);
-                return Ok(new { Message = "Changes have been saved successfully." });
+                return Ok(new { Message = "Los cambios se guardaron correctamente." });
             }
             catch (InvalidOperationException ex)
             {
@@ -97,19 +105,6 @@ namespace BudgetTracker.Controllers
             catch (Exception ex)
             {
                 return BadRequest(new { Message = ex.Message });
-            }
-        }
-
-        private bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
             }
         }
 

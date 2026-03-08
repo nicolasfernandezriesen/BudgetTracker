@@ -1,6 +1,5 @@
-﻿@model User
-
-
+﻿@model BudgetTracker.ViewModels.User.CreateViewModel;
+ 
 
 <div class="d-flex flex-column justify-content-center align-items-center" style="height: 50vh;">
 
@@ -12,27 +11,29 @@
                 <div class="row mb-3">
                     <label asp-for="UserName" class="col-sm-3 col-form-label">Usuario:</label>
                     <div class="col-sm-9">
-                        <input asp-for="UserName" type="text" class="form-control" name="username" required>
+                        <input asp-for="UserName" class="form-control">
                         <span asp-validation-for="UserName" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <label asp-for="Email" class="col-sm-3 col-form-label">Email:</label>
                     <div class="col-sm-9">
-                        <input asp-for="Email" type="email" class="form-control" name="email" required>
+                        <input asp-for="Email" class="form-control">
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <label for="password" class="col-sm-3 col-form-label">Contraseña:</label>
+                    <label asp-for="Password" class="col-sm-3 col-form-label">Contraseña:</label>
                     <div class="col-sm-9">
-                        <input id="password" type="password" class="form-control" name="password" required>
+                        <input asp-for="Password" type="password" class="form-control">
+                        <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <label for="confirmPassword" class="col-sm-3 col-form-label">Confirmar Contraseña:</label>
+                    <label asp-for="ConfirmPassword" class="col-sm-3 col-form-label">Confirmar Contraseña:</label>
                     <div class="col-sm-9">
-                        <input id="confirmPassword" type="password" class="form-control" name="confirmPassword" required>
+                        <input asp-for="ConfirmPassword" type="password" class="form-control">
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                     </div>
                 </div>
 
