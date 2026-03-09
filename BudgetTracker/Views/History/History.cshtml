@@ -93,10 +93,11 @@
                                 <td style="width: 12.8vw">
                                     @if (day.HasValue)
                                     {
+                                        var dayAsDateOnly = DateOnly.FromDateTime(day.Value);
+
                                         <div class="d-flex flex-column">
                                             <p class="text-center">@day.Value.Day</p>
                                         </div>
-                                        var dayAsDateOnly = DateOnly.FromDateTime(day.Value);
 
                                         <ul>
                                             @if (incomeByDate.ContainsKey(dayAsDateOnly))
@@ -147,5 +148,5 @@
 </divc>
 
 @section Scripts {
-    <script src="~/js/History/History.js"></script>
+    <script src="~/js/History/History.js" asp-append-version="true"></script>
 }
