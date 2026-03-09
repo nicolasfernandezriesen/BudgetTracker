@@ -58,11 +58,18 @@ namespace BudgetTracker.Controllers
         }
 
         // GET: IncomeController/Create
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(string selectedDate = null)
         {
             try
             {
                 var viewModel = await _incomeService.GetCreateViewModelAsync();
+
+                if (!string.IsNullOrEmpty(selectedDate))
+                {
+                    DateOnly date = DateOnly.Parse(selectedDate);
+                    viewModel.Income.IncomeDate = date;
+                }
+
                 return View(viewModel);
             }
             catch (Exception ex)

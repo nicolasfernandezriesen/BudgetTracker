@@ -58,11 +58,18 @@ namespace BudgetTracker.Controllers
         }
 
         // GET: BillController/Create
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(string selectedDate = null)
         {
             try
             {
                 var viewModel = await _billService.GetCreateViewModelAsync();
+
+                if (!string.IsNullOrEmpty(selectedDate))
+                {
+                    DateOnly date = DateOnly.Parse(selectedDate);
+                    viewModel.Bill.BillsDate = date;
+                }
+
                 return View(viewModel);
             }
             catch (Exception ex)
