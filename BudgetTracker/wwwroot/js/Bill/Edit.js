@@ -19,6 +19,12 @@
 }
 
 async function SaveEdit() {
+    const isConfirmed = await showConfirmationAlert('Actualizar gasto', 'Estas seguro que queres actualizar este gasto?');
+
+    if (!isConfirmed.isConfirmed) {
+        return;
+    }
+
     const form = document.getElementById('editBillForm');
     const formData = new FormData(form);
 

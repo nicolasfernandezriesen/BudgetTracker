@@ -23,6 +23,12 @@
 }
 
 async function CreateIncome() {
+    const isConfirmed = await showConfirmationAlert('Creacion de ingreso', 'Estas seguro que queres crear este ingreso?');
+
+    if (!isConfirmed.isConfirmed) {
+        return;
+    }
+
     const form = document.getElementById('createIncomeForm');
     const formData = new FormData(form);
 

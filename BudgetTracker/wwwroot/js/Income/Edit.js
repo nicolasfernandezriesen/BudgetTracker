@@ -19,6 +19,12 @@ function IsValidIncome(amount, date) {
 }
 
 async function SaveEdit() {
+    const isConfirmed = await showConfirmationAlert('Actualizar ingreso', 'Estas seguro que queres actualizar este ingreso?');
+
+    if (!isConfirmed.isConfirmed) {
+        return;
+    }
+
     const form = document.getElementById('editIncomeForm');
     const formData = new FormData(form);
 

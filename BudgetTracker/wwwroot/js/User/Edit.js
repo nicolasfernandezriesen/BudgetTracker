@@ -56,6 +56,12 @@ function checkValidData(dataObject) {
 };
 
 async function sendEditUser() {
+    const isConfirmed = await showConfirmationAlert('Editar usuario', 'Estas seguro que queres editar el usuario?');
+
+    if (!isConfirmed.isConfirmed) {
+        return;
+    }
+
     const form = document.getElementById('editUserForm');
     const formData = new FormData(form);
 
