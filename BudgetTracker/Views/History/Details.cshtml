@@ -1,6 +1,8 @@
 ﻿@model BudgetTracker.ViewModels.History.DetailsViewModel;
 @{
     string mes = new DateTime(1, Model.Month, 1).ToString("MMMM", new System.Globalization.CultureInfo("es-AR"));
+
+    var categories = ViewBag.Categories;
 }
 
 <div class="d-flex flex-column justify-content-center align-items-center">
@@ -29,8 +31,8 @@
             </div>
         </div>
 
-        <div>
-            <table class="table table-bordered text-center" style="width: 75vw">
+        <div class="d-flex flex-row" style="width: 85vw;">
+            <table class="table table-bordered text-center" style="width: 70vw;">
                 <thead>
                     <tr>
                         <th style="width: 6vw">Fecha</th>
@@ -61,6 +63,49 @@
                     }
                 </tbody>
             </table>
+
+            <div class="d-flex flex-column justify-content-center align-items-center ps-4" style="width: 15vw;">
+                <p class="text-center text-black mb-0 pb-0 border-bottom-0 border-top border-start border-end" style="width: 13vw;">
+                    <strong>Ingresos</strong>
+                </p>
+                <table class="table table-bordered text-center" style="width: 13vw;">
+                    <thead>
+                        <tr>
+                            <th>Categoria</th>
+                            <th>Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var category in categories)
+                        {
+                            <tr>
+                                <td>@category.CategoryName</td>
+                                <td>@category.TotalIncome.ToString("C")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <p class="text-center text-black mb-0 pb-0 border-bottom-0 border-top border-start border-end pt-1" style="width: 13vw;">
+                    <strong>Gastos</strong>
+                </p>
+                <table class="table table-bordered text-center" style="width: 13vw;">
+                    <thead>
+                        <tr>
+                            <th>Categoria</th>
+                            <th>Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var category in categories)
+                        {
+                            <tr>
+                                <td>@category.CategoryName</td>
+                                <td>@category.TotalBill.ToString("C")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
