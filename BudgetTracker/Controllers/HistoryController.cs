@@ -51,11 +51,25 @@ namespace BudgetTracker.Controllers
         //GET: HistoryController/Details?month=5&year=2021
         public async Task<IActionResult> Details(int month, int year)
         {
+            if (month == 0 || year == 0)
+            {
+                return BadRequest(new { Message = "Mes o año no válidos." });
+            }
+
             try
             {
                 var idUser = await GetUserIDAsync();
                 var history = await _historyService.GetBillIncomeAndMonthlyTotalAsync(idUser, month, year);
                 var categories = await _categoryService.GetAllCategoriesAsync();
+
+                var categoriesTotals = categories.Select(c => new
+                {
+                    CategoryName = c.CategoryName,
+                    TotalIncome = history.Income.Where(i => i.CategoryId == c.CategoryId)?.Sum(i => i.IncomeAmount) ?? 0,
+                    TotalBill = history.Bill.Where(b => b.CategoryId == c.CategoryId)?.Sum(b => b.BillsAmount) ?? 0
+                }).ToList();
+
+                ViewBag.Categories = categoriesTotals;
 
                 DetailsViewModel historyViewModel = new DetailsViewModel();
 
