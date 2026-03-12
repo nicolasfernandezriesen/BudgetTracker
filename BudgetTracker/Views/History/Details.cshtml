@@ -1,0 +1,66 @@
+﻿@model BudgetTracker.ViewModels.History.DetailsViewModel;
+@{
+    string mes = new DateTime(1, Model.Month, 1).ToString("MMMM", new System.Globalization.CultureInfo("es-AR"));
+}
+
+<div class="d-flex flex-column justify-content-center align-items-center">
+    <div class="d-flex flex-row justify-content-center align-items-center p-2">
+        <a asp-controller="History" asp-action="GetBillIncomeAndMonthlyTotal" asp-route-month="@Model.Month" asp-route-year="@Model.Year" class="btn text-white me-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1.1vw" height="1.1vw" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16">
+                <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z" />
+            </svg>
+        </a>
+        <h1>Detalles del mes @(char.ToUpper(mes[0]) + mes.Substring(1)) - @Model.Year.ToString("D4")</h1>
+    </div>
+
+    <div class="d-flex flex-column justify-content-center align-items-center border rounded box-shadow p-4 bg-secondary center">
+        <div class="d-flex flex-column justify-content-center align-items-center pt-2 pb-2">
+            <div class="d-flex flex-row justify-content-center align-items-center">
+                <h2>
+                    Total de ingresos: @(Model.TotalIncome.ToString("C")) -
+                    Total de gastos: @(Model.TotalBill.ToString("C"))
+                </h2>
+            </div>
+
+            <div>
+                <h2>
+                    Total del mes: @((Model.TotalIncome - Model.TotalBill).ToString("C", new System.Globalization.CultureInfo("es-AR")))
+                </h2>
+            </div>
+        </div>
+
+        <div>
+            <table class="table table-bordered text-center" style="width: 75vw">
+                <thead>
+                    <tr>
+                        <th style="width: 6vw">Fecha</th>
+                        <th style="width: 50vw">Descripción</th>
+                        <th style="width: 5vw">Tipo</th>
+                        <th style="width: 10vw">Categoria</th>
+                        <th style="width: 12vw">Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var numDay = 1; numDay <= DateTime.DaysInMonth(Model.Year, Model.Month); numDay++)
+                    {
+                        var currentDate = new DateOnly(Model.Year, Model.Month, numDay);
+                        
+                        @if (Model.Transactions.Any(t => t.Date == currentDate))
+                        {
+                            @foreach (var transaction in Model.Transactions.Where(t => t.Date == currentDate))
+                            {
+                                <tr>
+                                    <td style="width: 6vw">@transaction.Date.ToString("dd/MM/yyyy")</td>
+                                    <td style="width: 50vw">@transaction.Description</td>
+                                    <td style="width: 5vw">@transaction.Type</td>
+                                    <td style="width: 10vw">@transaction.Category</td>
+                                    <td style="width: 12vw">@transaction.Amount.ToString("C")</td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

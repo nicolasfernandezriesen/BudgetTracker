@@ -43,10 +43,10 @@
                                .ToDictionary(g => g.Key, g => g.ToList());
 }
 
-<divc lass="d-flex flex-column justify-content-center align-items-center">
+<div class="d-flex flex-column justify-content-center align-items-center">
 
-    <div class="d-flex justify-content-evenly align-items-center p-2">
-        <a asp-controller="User" asp-action="Index" class="btn text-white">
+    <div class="d-flex justify-content-center align-items-center p-2">
+        <a asp-controller="User" asp-action="Index" class="btn text-white me-3">
             <svg xmlns="http://www.w3.org/2000/svg" width="1.1vw" height="1.1vw" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16">
                 <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z" />
             </svg>
@@ -72,6 +72,12 @@
                 <p class="ms-1">Gastos totales del mes: @(Model.MonthlyTotal?.TotalBill?.ToString("C") ?? "No hay gastos.")</p>
             </div>
 
+            <div class="pb-2">
+                <button type="submit" class="btn-calendar" onclick="goDetailsComplete(@month, @year)">
+                    Ver Detalle Completo
+                </button>
+            </div>
+
             <table class="table table-bordered" style="width: 90vw">
                 <thead>
                     <tr>
@@ -95,8 +101,19 @@
                                     {
                                         var dayAsDateOnly = DateOnly.FromDateTime(day.Value);
 
-                                        <div class="d-flex flex-column">
-                                            <p class="text-center">@day.Value.Day</p>
+                                        <div class="position-relative text-center">
+                                            <p class="mb-0">@day.Value.Day</p>
+
+                                            <div class="text-black position-absolute end-0 top-50 translate-middle-y"
+                                                 style="cursor:pointer;"
+                                                 title="Agregar una nueva transacción"
+                                                 onclick="createTransaction('@dayAsDateOnly.ToString("yyyy-MM-dd")')">
+
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 22 22">
+                                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                                </svg>
+                                            </div>
                                         </div>
 
                                         <ul>
@@ -145,7 +162,26 @@
             </table>
         </div>
     </div>
-</divc>
+</div>
+
+<div class="modal fade" id="createTransactionModal" tabindex="-1" aria-labelledby="createTransactionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createTransactionModalLabel">Nueva entrada</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Qué tipo de entrada querés crear?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" onclick="goToCreateTransaction('income')">Ingreso</button>
+                <button type="button" class="btn btn-danger" onclick="goToCreateTransaction('bill')">Gasto</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <script src="~/js/History/History.js" asp-append-version="true"></script>

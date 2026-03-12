@@ -10,6 +10,50 @@
     window.location.href = "/History/GetBillIncomeAndMonthlyTotal?month=" + month + "&year=" + year;
 }
 
+function goDetailsComplete(month, year) {
+    if (month == 13) {
+        month = 1;
+        year++;
+    }
+    else if (month == 0) {
+        month = 12;
+        year--;
+    }
+
+    window.location.href = "/History/Details?month=" + month + "&year=" + year;
+}
+
+let selectedTransactionDate = null;
+let createTransactionModal = null;
+
+function createTransaction(selectedDate) {
+    selectedTransactionDate = selectedDate;
+
+    if (!createTransactionModal) {
+        const modalElement = document.getElementById('createTransactionModal');
+        if (!modalElement) {
+            return;
+        }
+
+        createTransactionModal = new bootstrap.Modal(modalElement);
+    }
+
+    createTransactionModal.show();
+}
+
+function goToCreateTransaction(type) {
+    if (!selectedTransactionDate) {
+        return;
+    }
+
+    if (createTransactionModal) {
+        createTransactionModal.hide();
+    }
+
+    const basePath = type === 'income' ? '/Income/Create' : '/Bill/Create';
+    window.location.href = `${basePath}?selectedDate=${encodeURIComponent(selectedTransactionDate)}`;
+}
+
 function goBackPage(date = null) {
 
     if (date == null) {
