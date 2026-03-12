@@ -16,6 +16,11 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 
+// Add globalization settings for Spanish (Argentina)
+var culture = new CultureInfo("es-AR");
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
