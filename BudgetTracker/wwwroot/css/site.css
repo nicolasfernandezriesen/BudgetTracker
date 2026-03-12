@@ -36,10 +36,12 @@ body {
     background-color: transparent;
     border: hidden;
     font-size: 1rem;
+    text-decoration: underline;
 }
 
 .btn-calendar:hover {
     color: black;
+    cursor: pointer;
 }
 
 .btn-previousnext-calendar:hover {

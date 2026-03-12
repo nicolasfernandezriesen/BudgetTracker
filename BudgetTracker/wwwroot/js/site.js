@@ -31,3 +31,14 @@ function showErrorAlert(title, text) {
         confirmButtonText: 'OK'
     });
 };
+
+function showConfirmationAlert(title, text) {
+    return Swal.fire({
+        title: title || '¿Estás seguro?',
+        text: text || 'Si acepta, los cambios se aplicaran.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí',
+        cancelButtonText: 'No'
+    });
+};

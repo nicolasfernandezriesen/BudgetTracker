@@ -31,6 +31,12 @@
 }
 
 async function CreateUser() {
+    const isConfirmed = await showConfirmationAlert('Creacion de usuario', 'Estas seguro que queres crear este usuario?');
+
+    if (!isConfirmed.isConfirmed) {
+        return;
+    }
+
     const form = document.getElementById('createUserForm');
     const formData = new FormData(form);
 

@@ -24,6 +24,12 @@
 }
 
 async function CreateBill() {
+    const isConfirmed = await showConfirmationAlert('Creacion de gasto', 'Estas seguro que queres crear este gasto?');
+
+    if (!isConfirmed.isConfirmed) {
+        return;
+    }
+
     const form = document.getElementById('createBillForm');
     const formData = new FormData(form);
 
