@@ -4,7 +4,6 @@ using BudgetTracker.Services.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace BudgetTracker.Controllers
 {
@@ -21,8 +20,9 @@ namespace BudgetTracker.Controllers
         }
 
         // GET: UserController
-        public ActionResult Index()
+        public ActionResult Index(bool fromEmailConfirmation = false)
         {
+            TempData["FromEmailConfirmation"] = fromEmailConfirmation;
             return View("Home");
         }
 
@@ -45,7 +45,7 @@ namespace BudgetTracker.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                throw new UnauthorizedAccessException("User is not authenticated.");
+                throw new UnauthorizedAccessException("Usuario no autenticado");
             }
 
             return user.Id;
