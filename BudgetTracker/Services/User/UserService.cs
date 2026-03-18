@@ -1,7 +1,10 @@
 using BudgetTracker.Models;
 using BudgetTracker.Repositories.UserRepository;
 using BudgetTracker.ViewModels.User;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Text;
 using System.Text.RegularExpressions;
 using UserEntity = BudgetTracker.Models.User;
 
@@ -98,6 +101,47 @@ namespace BudgetTracker.Services.User
             {
                 await _signInManager.RefreshSignInAsync(user);
             }
+        }
+
+        public async Task ResetPasswordAsync(ResetPasswordViewModel model)
+        {
+            string decodedEmail;
+            try
+            {
+                var emailBytes = WebEncoders.Base64UrlDecode(model.Email);
+                decodedEmail = Encoding.UTF8.GetString(emailBytes);
+            }
+            catch (FormatException)
+            {
+                throw new InvalidOperationException("El formato del email en la URL es inválido.");
+            }
+
+            var user = await _userManager.FindByEmailAsync(decodedEmail);
+            if (user == null)
+            {
+                throw new InvalidOperationException("Hubo un problema, intentelo de nuevo.");
+            }
+
+            string decodedToken;
+            try
+            {
+                var tokenBytes = WebEncoders.Base64UrlDecode(model.Token);
+                decodedToken = Encoding.UTF8.GetString(tokenBytes);
+            }
+            catch (FormatException)
+            {
+                throw new InvalidOperationException("El token de seguridad ha sido alterado o es inválido.");
+            }
+
+            var resetPassResult = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
+
+            if (!resetPassResult.Succeeded)
+            {
+                var errors = string.Join(" ", resetPassResult.Errors.Select(e => e.Description));
+                throw new Exception($"No se pudo restablecer la contraseña: {errors}");
+            }
+
+            await _signInManager.SignInAsync(user, isPersistent: true);
         }
 
         public async Task DeleteUserAsync(int userId)

@@ -1,10 +1,13 @@
 using BudgetTracker.Models;
-using BudgetTracker.Services.User;
 using BudgetTracker.ViewModels;
 using BudgetTracker.ViewModels.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using System.Diagnostics;
+using System.Text;
 
 namespace BudgetTracker.Controllers
 {
@@ -13,15 +16,18 @@ namespace BudgetTracker.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly IEmailSender _emailSender;
 
         public HomeController(
             ILogger<HomeController> logger,
             UserManager<User> userManager,
-            SignInManager<User> signInManager)
+            SignInManager<User> signInManager,
+            IEmailSender emailSender)
         {
             _logger = logger;
             _userManager = userManager;
             _signInManager = signInManager;
+            _emailSender = emailSender;
         }
 
         // GET: HomeController/Index
@@ -31,6 +37,8 @@ namespace BudgetTracker.Controllers
         }
 
         // GET: HomeController/Create
+        [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Create()
         {
             await _signInManager.SignOutAsync();
@@ -64,13 +72,76 @@ namespace BudgetTracker.Controllers
 
                 await _userManager.AddToRoleAsync(newUser, "User");
 
-                await _signInManager.SignInAsync(newUser, isPersistent: true);
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+
+                var callbackUrl = Url.Action("ConfirmEmail", "Home", new { userId = newUser.Id, token }, protocol: HttpContext.Request.Scheme);
+                string emailContent = $@"
+                                    <h1>Bienvenido a Budget Tracker</h1>
+                                    <p>Para activar tu cuenta, haz clic en el siguiente enlace:
+                                        <a href='{callbackUrl}' style='padding:1px; color:black;'>Confirmar Cuenta</a>
+                                    </p>";
+
+                await _emailSender.SendEmailAsync(newUser.Email, "Confirmar cuenta", emailContent);
                 return Ok(new { Message = "Usuario registrado exitosamente." });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { Message = ex.Message });
             }
+        }
+
+        //GET : HomeController/ConfirmEmail
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmEmail(int userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null || token == null) return RedirectToAction("Index", "Home");
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+
+            if (result.Succeeded)
+            {
+                await _signInManager.SignInAsync(user, isPersistent: true);
+                return RedirectToAction("Index", "User", new { fromEmailConfirmation = true });
+            }
+            else
+            {
+                return BadRequest(new { Message = "Error al confirmar el email." });
+            }
+        }
+
+        //GET: HomeControlller/ForgotPassword
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        //POST: HomeController/ForgotPassword
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([FromForm] string email)
+        {
+            if (email == null) return BadRequest(new { Message = "El email no puede ser nulo." });
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+            {
+                return Ok(new { Message = "Se ha enviado un correo de recuperación al email imgresado." });
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            var encodedEmail = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(email));
+            var callbackUrl = Url.Action("ResetPassword", "User",
+                new { token = encodedToken, email = encodedEmail }, protocol: Request.Scheme);
+
+            await _emailSender.SendEmailAsync(email, "Restablecer contraseña",
+                $"Para restablecer tu contraseña, haz clic en el siguiente enlace: <a href='{callbackUrl}'>Restablecer contraseña</a>");
+
+            return Ok(new { Message = "Se ha enviado un correo de recuperación al email ingresado." });
         }
 
         // GET: HomeController/Login

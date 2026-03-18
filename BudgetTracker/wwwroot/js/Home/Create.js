@@ -61,7 +61,7 @@ async function CreateUser() {
 
             await showSuccessAlert('¡Éxito!', data.message);
 
-            window.location.href = '/User';
+            window.location.href = '/Home/Index';
         } else {
             throw new Error(data.message);
         }

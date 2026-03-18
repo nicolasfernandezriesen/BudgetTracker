@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Http
+﻿@using Microsoft.AspNetCore.Http;
 
 <div class="p-4 text-light text-center">
     <h1> Bienvenido @User.Identity.Name. Que vamos a hacer?</h1>
@@ -37,3 +37,10 @@
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        var fromEmailConfirmation = @Json.Serialize(TempData["FromEmailConfirmation"] ?? false);
+    </script>
+    <script src="~/js/User/Home.js" asp-append-version="true"></script>
+}

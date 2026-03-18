@@ -7,11 +7,13 @@ using BudgetTracker.Repositories.MonthlyTotalRepository;
 using BudgetTracker.Repositories.UserRepository;
 using BudgetTracker.Services.Bill;
 using BudgetTracker.Services.Category;
+using BudgetTracker.Services.EmailSender;
 using BudgetTracker.Services.History;
 using BudgetTracker.Services.Income;
 using BudgetTracker.Services.User;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -39,11 +41,15 @@ builder.Services.AddDbContext<BudgettrackerdbContext>(options =>
         );
     }));
 
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+
 // Configure ASP.NET Core Identity
 builder.Services.AddIdentity<User, IdentityRole<int>>()
     .AddEntityFrameworkStores<BudgettrackerdbContext>()
     .AddDefaultTokenProviders();
 
+// Configure Identity options
 builder.Services.Configure<IdentityOptions>(options =>
 {
     // Password settings
@@ -53,6 +59,9 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireUppercase = false;
     options.Password.RequiredLength = 6;
 
+    // Sign-in settings
+    options.SignIn.RequireConfirmedEmail = true;
+
     // Lockout settings
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
     options.Lockout.MaxFailedAccessAttempts = 5;
@@ -60,6 +69,12 @@ builder.Services.Configure<IdentityOptions>(options =>
 
     // User settings
     options.User.RequireUniqueEmail = true;
+});
+
+// Configure token lifespan for email confirmation and password reset
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+{
+    options.TokenLifespan = TimeSpan.FromHours(2);
 });
 
 // Configure authentication

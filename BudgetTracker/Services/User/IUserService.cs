@@ -10,6 +10,7 @@ namespace BudgetTracker.Services.User
         Task<BudgetTracker.Models.User?> GetUserByEmailAsync(string email);
         Task<BudgetTracker.Models.User?> GetUserByNameAsync(string name);
         Task UpdateUserAsync(EditViewModel user, int userId);
+        Task ResetPasswordAsync(ResetPasswordViewModel model);
         Task DeleteUserAsync(int userId);
     }
 }
