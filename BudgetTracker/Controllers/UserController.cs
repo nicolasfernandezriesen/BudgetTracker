@@ -108,6 +108,51 @@ namespace BudgetTracker.Controllers
             }
         }
 
+        //GET: UserController/ResetPassword
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPassword(string token, string email)
+        {
+            if (token == null || email == null)
+            {
+                return BadRequest(new { Message = "Token o email no proporcionado." });
+            }
+
+            ResetPasswordViewModel model = new ResetPasswordViewModel
+            {
+                Token = token,
+                Email = email
+            };
+
+            return View(model);
+        }
+
+        //POST: UserController/ResetPassword
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                return BadRequest(new { Message = string.Join("\n\n ", errors) });
+            }
+            try
+            {
+                await _userService.ResetPasswordAsync(model);
+                return Ok(new { Message = "Contraseña restablecida correctamente." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
         // GET: UserController/Delete/5
         public ActionResult Delete(int id)
         {

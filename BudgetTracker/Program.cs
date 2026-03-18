@@ -49,6 +49,7 @@ builder.Services.AddIdentity<User, IdentityRole<int>>()
     .AddEntityFrameworkStores<BudgettrackerdbContext>()
     .AddDefaultTokenProviders();
 
+// Configure Identity options
 builder.Services.Configure<IdentityOptions>(options =>
 {
     // Password settings
@@ -68,6 +69,12 @@ builder.Services.Configure<IdentityOptions>(options =>
 
     // User settings
     options.User.RequireUniqueEmail = true;
+});
+
+// Configure token lifespan for email confirmation and password reset
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+{
+    options.TokenLifespan = TimeSpan.FromHours(2);
 });
 
 // Configure authentication

@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using System.Diagnostics;
+using System.Text;
 
 namespace BudgetTracker.Controllers
 {
@@ -107,6 +109,39 @@ namespace BudgetTracker.Controllers
             {
                 return BadRequest(new { Message = "Error al confirmar el email." });
             }
+        }
+
+        //GET: HomeControlller/ForgotPassword
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        //POST: HomeController/ForgotPassword
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([FromForm] string email)
+        {
+            if (email == null) return BadRequest(new { Message = "El email no puede ser nulo." });
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+            {
+                return Ok(new { Message = "Se ha enviado un correo de recuperación al email imgresado." });
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            var encodedEmail = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(email));
+            var callbackUrl = Url.Action("ResetPassword", "User",
+                new { token = encodedToken, email = encodedEmail }, protocol: Request.Scheme);
+
+            await _emailSender.SendEmailAsync(email, "Restablecer contraseña",
+                $"Para restablecer tu contraseña, haz clic en el siguiente enlace: <a href='{callbackUrl}'>Restablecer contraseña</a>");
+
+            return Ok(new { Message = "Se ha enviado un correo de recuperación al email ingresado." });
         }
 
         // GET: HomeController/Login
