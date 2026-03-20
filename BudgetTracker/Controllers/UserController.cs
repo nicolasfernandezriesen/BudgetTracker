@@ -4,6 +4,7 @@ using BudgetTracker.Services.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace BudgetTracker.Controllers
 {
@@ -12,11 +13,13 @@ namespace BudgetTracker.Controllers
     {
         private readonly IUserService _userService;
         private readonly UserManager<User> _userManager;
+        private readonly ILogger<UserController> _logger;
 
-        public UserController(IUserService userService, UserManager<User> userManager)
+        public UserController(IUserService userService, UserManager<User> userManager, ILogger<UserController> logger)
         {
             _userService = userService;
             _userManager = userManager;
+            _logger = logger;
         }
 
         // GET: UserController
@@ -54,6 +57,8 @@ namespace BudgetTracker.Controllers
         // GET: UserController/Edit
         public async Task<ActionResult> Edit()
         {
+            _logger.LogInformation("Inicio de vista de edición de usuario. TraceId: {TraceId}", HttpContext.TraceIdentifier);
+
             try
             {
                 int userId = await GetUserIDAsync();
@@ -61,6 +66,7 @@ namespace BudgetTracker.Controllers
 
                 if (user == null)
                 {
+                    _logger.LogWarning("No se encontró usuario para edición. UserId: {UserId}. TraceId: {TraceId}", userId, HttpContext.TraceIdentifier);
                     return NotFound();
                 }
 
@@ -72,10 +78,12 @@ namespace BudgetTracker.Controllers
                     UserName = user.UserName
                 };
 
+                _logger.LogInformation("Vista de edición de usuario preparada. UserId: {UserId}. TraceId: {TraceId}", userId, HttpContext.TraceIdentifier);
                 return View(editViewModel);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al preparar vista de edición de usuario. TraceId: {TraceId}", HttpContext.TraceIdentifier);
                 return BadRequest(new { Message = ex.Message });
             }
         }
@@ -85,9 +93,12 @@ namespace BudgetTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit([FromForm] EditViewModel editViewModel)
         {
+            _logger.LogInformation("Inicio de actualización de usuario. TraceId: {TraceId}", HttpContext.TraceIdentifier);
+
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                _logger.LogWarning("Actualización de usuario rechazada por modelo inválido. TraceId: {TraceId}", HttpContext.TraceIdentifier);
                 return BadRequest(new { Message = string.Join("\n\n ", errors) });
             }
 
@@ -96,14 +107,17 @@ namespace BudgetTracker.Controllers
                 int userId = await GetUserIDAsync();
                 await _userService.UpdateUserAsync(editViewModel, userId);
 
+                _logger.LogInformation("Usuario actualizado correctamente. UserId: {UserId}. TraceId: {TraceId}", userId, HttpContext.TraceIdentifier);
                 return Ok(new { Message = "Los cambios se guardaron correctamente." });
             }
             catch (InvalidOperationException ex)
             {
+                _logger.LogWarning(ex, "Actualización de usuario falló por regla de negocio. TraceId: {TraceId}", HttpContext.TraceIdentifier);
                 return NotFound(new { Message = ex.Message });
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado al actualizar usuario. TraceId: {TraceId}", HttpContext.TraceIdentifier);
                 return BadRequest(new { Message = ex.Message });
             }
         }
@@ -113,8 +127,11 @@ namespace BudgetTracker.Controllers
         [AllowAnonymous]
         public IActionResult ResetPassword(string token, string email)
         {
+            _logger.LogInformation("Inicio de vista de reset de contraseña. TraceId: {TraceId}", HttpContext.TraceIdentifier);
+
             if (token == null || email == null)
             {
+                _logger.LogWarning("ResetPassword GET rechazado por token/email faltante. TraceId: {TraceId}", HttpContext.TraceIdentifier);
                 return BadRequest(new { Message = "Token o email no proporcionado." });
             }
 
@@ -124,6 +141,7 @@ namespace BudgetTracker.Controllers
                 Email = email
             };
 
+            _logger.LogInformation("Vista de reset preparada correctamente. TraceId: {TraceId}", HttpContext.TraceIdentifier);
             return View(model);
         }
 
@@ -133,22 +151,28 @@ namespace BudgetTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViewModel model)
         {
+            _logger.LogInformation("Inicio de POST reset de contraseña. TraceId: {TraceId}", HttpContext.TraceIdentifier);
+
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                _logger.LogWarning("ResetPassword POST rechazado por modelo inválido. TraceId: {TraceId}", HttpContext.TraceIdentifier);
                 return BadRequest(new { Message = string.Join("\n\n ", errors) });
             }
             try
             {
                 await _userService.ResetPasswordAsync(model);
+                _logger.LogInformation("Reset de contraseña completado exitosamente. TraceId: {TraceId}", HttpContext.TraceIdentifier);
                 return Ok(new { Message = "Contraseña restablecida correctamente." });
             }
             catch (InvalidOperationException ex)
             {
+                _logger.LogWarning(ex, "ResetPassword POST falló por regla de negocio. TraceId: {TraceId}", HttpContext.TraceIdentifier);
                 return NotFound(new { Message = ex.Message });
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado en ResetPassword POST. TraceId: {TraceId}", HttpContext.TraceIdentifier);
                 return BadRequest(new { Message = ex.Message });
             }
         }
