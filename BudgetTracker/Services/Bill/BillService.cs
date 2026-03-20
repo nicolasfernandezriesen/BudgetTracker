@@ -4,6 +4,7 @@ using BudgetTracker.Repositories.CategoryRepository;
 using BudgetTracker.Repositories.MonthlyTotalRepository;
 using BudgetTracker.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Logging;
 
 namespace BudgetTracker.Services.Bill
 {
@@ -12,12 +13,14 @@ namespace BudgetTracker.Services.Bill
         private readonly IBillRepository _billRepository;
         private readonly IMonthlyTotalRepository _monthlyTotalRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly ILogger<BillService> _logger;
 
-        public BillService(IBillRepository billRepository, IMonthlyTotalRepository monthlyTotalRepository, ICategoryRepository categoryRepository)
+        public BillService(IBillRepository billRepository, IMonthlyTotalRepository monthlyTotalRepository, ICategoryRepository categoryRepository, ILogger<BillService> logger)
         {
             _billRepository = billRepository;
             _monthlyTotalRepository = monthlyTotalRepository;
             _categoryRepository = categoryRepository;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<BudgetTracker.Models.Bill>> GetBillsByUserAsync(int userId)
@@ -89,47 +92,82 @@ namespace BudgetTracker.Services.Bill
 
         public async Task CreateBillAsync(int userId, int amount, int categoryId, string desc, DateOnly date)
         {
-            ValidateBillInput(amount, categoryId, date);
+            _logger.LogInformation("Inicio de CreateBillAsync. UserId: {UserId}", userId);
 
-            var bill = new BudgetTracker.Models.Bill
+            try
             {
-                UserId = userId,
-                BillsAmount = amount,
-                BillsDesc = desc,
-                BillsDate = date,
-                CategoryId = categoryId
-            };
+                ValidateBillInput(amount, categoryId, date);
 
-            var monthlyTotal = await GetOrCreateMonthlyTotalAsync(date.Month, date.Year, userId);
-            monthlyTotal.TotalBill += bill.BillsAmount;
+                var bill = new BudgetTracker.Models.Bill
+                {
+                    UserId = userId,
+                    BillsAmount = amount,
+                    BillsDesc = desc,
+                    BillsDate = date,
+                    CategoryId = categoryId
+                };
 
-            await _billRepository.AddAsync(bill);
-            _monthlyTotalRepository.Update(monthlyTotal);
-            await _billRepository.SaveChangesAsync();
+                var monthlyTotal = await GetOrCreateMonthlyTotalAsync(date.Month, date.Year, userId);
+                monthlyTotal.TotalBill += bill.BillsAmount;
+
+                await _billRepository.AddAsync(bill);
+                _monthlyTotalRepository.Update(monthlyTotal);
+                await _billRepository.SaveChangesAsync();
+
+                _logger.LogInformation("CreateBillAsync completado. UserId: {UserId}. Amount: {Amount}. CategoryId: {CategoryId}", userId, amount, categoryId);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "CreateBillAsync rechazado por validación. UserId: {UserId}", userId);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en CreateBillAsync. UserId: {UserId}", userId);
+                throw;
+            }
         }
 
         public async Task UpdateBillAsync(int userId, int billId, int amount, int categoryId, string desc, DateOnly date)
         {
-            ValidateBillInput(amount, categoryId, date);
+            _logger.LogInformation("Inicio de UpdateBillAsync. UserId: {UserId}. BillId: {BillId}", userId, billId);
 
-            var bill = await _billRepository.GetBillByIdAndUserAsync(billId, userId);
-            if (bill == null)
+            try
             {
-                throw new InvalidOperationException("Bill was not found.");
+                ValidateBillInput(amount, categoryId, date);
+
+                var bill = await _billRepository.GetBillByIdAndUserAsync(billId, userId);
+                if (bill == null)
+                {
+                    _logger.LogWarning("UpdateBillAsync falló: gasto no encontrado. UserId: {UserId}. BillId: {BillId}", userId, billId);
+                    throw new InvalidOperationException("Bill was not found.");
+                }
+
+                var monthlyTotal = await GetOrCreateMonthlyTotalAsync(bill.BillsDate.Month, bill.BillsDate.Year, userId);
+                monthlyTotal.TotalBill -= bill.BillsAmount;
+                monthlyTotal.TotalBill += amount;
+
+                bill.BillsAmount = amount;
+                bill.BillsDesc = desc;
+                bill.BillsDate = date;
+                bill.CategoryId = categoryId;
+
+                _monthlyTotalRepository.Update(monthlyTotal);
+                _billRepository.Update(bill);
+                await _billRepository.SaveChangesAsync();
+
+                _logger.LogInformation("UpdateBillAsync completado. UserId: {UserId}. BillId: {BillId}. Amount: {Amount}. CategoryId: {CategoryId}", userId, billId, amount, categoryId);
             }
-
-            var monthlyTotal = await GetOrCreateMonthlyTotalAsync(bill.BillsDate.Month, bill.BillsDate.Year, userId);
-            monthlyTotal.TotalBill -= bill.BillsAmount;
-            monthlyTotal.TotalBill += amount;
-
-            bill.BillsAmount = amount;
-            bill.BillsDesc = desc;
-            bill.BillsDate = date;
-            bill.CategoryId = categoryId;
-
-            _monthlyTotalRepository.Update(monthlyTotal);
-            _billRepository.Update(bill);
-            await _billRepository.SaveChangesAsync();
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "UpdateBillAsync rechazado por validación. UserId: {UserId}. BillId: {BillId}", userId, billId);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en UpdateBillAsync. UserId: {UserId}. BillId: {BillId}", userId, billId);
+                throw;
+            }
         }
 
         public async Task DeleteBillAsync(int userId, int billId, DateOnly date)

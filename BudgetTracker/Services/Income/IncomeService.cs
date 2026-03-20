@@ -4,6 +4,7 @@ using BudgetTracker.Repositories.IncomeRepository;
 using BudgetTracker.Repositories.MonthlyTotalRepository;
 using BudgetTracker.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Logging;
 
 namespace BudgetTracker.Services.Income
 {
@@ -12,12 +13,14 @@ namespace BudgetTracker.Services.Income
         private readonly IIncomeRepository _incomeRepository;
         private readonly IMonthlyTotalRepository _monthlyTotalRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly ILogger<IncomeService> _logger;
 
-        public IncomeService(IIncomeRepository incomeRepository, IMonthlyTotalRepository monthlyTotalRepository, ICategoryRepository categoryRepository)
+        public IncomeService(IIncomeRepository incomeRepository, IMonthlyTotalRepository monthlyTotalRepository, ICategoryRepository categoryRepository, ILogger<IncomeService> logger)
         {
             _incomeRepository = incomeRepository;
             _monthlyTotalRepository = monthlyTotalRepository;
             _categoryRepository = categoryRepository;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<BudgetTracker.Models.Income>> GetIncomeByUserAsync(int userId)
@@ -67,47 +70,82 @@ namespace BudgetTracker.Services.Income
 
         public async Task CreateIncomeAsync(int userId, int amount, int categoryId, string desc, DateOnly date)
         {
-            ValidateIncomeInput(amount, categoryId, date);
+            _logger.LogInformation("Inicio de CreateIncomeAsync. UserId: {UserId}", userId);
 
-            var income = new BudgetTracker.Models.Income
+            try
             {
-                UserId = userId,
-                IncomeAmount = amount,
-                IncomeDesc = desc,
-                IncomeDate = date,
-                CategoryId = categoryId
-            };
+                ValidateIncomeInput(amount, categoryId, date);
 
-            var monthlyTotal = await GetOrCreateMonthlyTotalAsync(date.Month, date.Year, userId);
-            monthlyTotal.TotalIncome += income.IncomeAmount;
+                var income = new BudgetTracker.Models.Income
+                {
+                    UserId = userId,
+                    IncomeAmount = amount,
+                    IncomeDesc = desc,
+                    IncomeDate = date,
+                    CategoryId = categoryId
+                };
 
-            await _incomeRepository.AddAsync(income);
-            _monthlyTotalRepository.Update(monthlyTotal);
-            await _incomeRepository.SaveChangesAsync();
+                var monthlyTotal = await GetOrCreateMonthlyTotalAsync(date.Month, date.Year, userId);
+                monthlyTotal.TotalIncome += income.IncomeAmount;
+
+                await _incomeRepository.AddAsync(income);
+                _monthlyTotalRepository.Update(monthlyTotal);
+                await _incomeRepository.SaveChangesAsync();
+
+                _logger.LogInformation("CreateIncomeAsync completado. UserId: {UserId}. Amount: {Amount}. CategoryId: {CategoryId}", userId, amount, categoryId);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "CreateIncomeAsync rechazado por validación. UserId: {UserId}", userId);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en CreateIncomeAsync. UserId: {UserId}", userId);
+                throw;
+            }
         }
 
         public async Task UpdateIncomeAsync(int userId, int incomeId, int amount, int categoryId, string desc, DateOnly date)
         {
-            ValidateIncomeInput(amount, categoryId, date);
+            _logger.LogInformation("Inicio de UpdateIncomeAsync. UserId: {UserId}. IncomeId: {IncomeId}", userId, incomeId);
 
-            var income = await _incomeRepository.GetIncomeByIdAndUserAsync(incomeId, userId);
-            if (income == null)
+            try
             {
-                throw new InvalidOperationException("Income was not found.");
+                ValidateIncomeInput(amount, categoryId, date);
+
+                var income = await _incomeRepository.GetIncomeByIdAndUserAsync(incomeId, userId);
+                if (income == null)
+                {
+                    _logger.LogWarning("UpdateIncomeAsync falló: ingreso no encontrado. UserId: {UserId}. IncomeId: {IncomeId}", userId, incomeId);
+                    throw new InvalidOperationException("Income was not found.");
+                }
+
+                var monthlyTotal = await GetOrCreateMonthlyTotalAsync(income.IncomeDate.Month, income.IncomeDate.Year, userId);
+                monthlyTotal.TotalIncome -= income.IncomeAmount;
+                monthlyTotal.TotalIncome += amount;
+
+                income.IncomeAmount = amount;
+                income.IncomeDesc = desc;
+                income.IncomeDate = date;
+                income.CategoryId = categoryId;
+
+                _monthlyTotalRepository.Update(monthlyTotal);
+                _incomeRepository.Update(income);
+                await _incomeRepository.SaveChangesAsync();
+
+                _logger.LogInformation("UpdateIncomeAsync completado. UserId: {UserId}. IncomeId: {IncomeId}. Amount: {Amount}. CategoryId: {CategoryId}", userId, incomeId, amount, categoryId);
             }
-
-            var monthlyTotal = await GetOrCreateMonthlyTotalAsync(income.IncomeDate.Month, income.IncomeDate.Year, userId);
-            monthlyTotal.TotalIncome -= income.IncomeAmount;
-            monthlyTotal.TotalIncome += amount;
-
-            income.IncomeAmount = amount;
-            income.IncomeDesc = desc;
-            income.IncomeDate = date;
-            income.CategoryId = categoryId;
-
-            _monthlyTotalRepository.Update(monthlyTotal);
-            _incomeRepository.Update(income);
-            await _incomeRepository.SaveChangesAsync();
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "UpdateIncomeAsync rechazado por validación. UserId: {UserId}. IncomeId: {IncomeId}", userId, incomeId);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en UpdateIncomeAsync. UserId: {UserId}. IncomeId: {IncomeId}", userId, incomeId);
+                throw;
+            }
         }
 
         public async Task DeleteIncomeAsync(int userId, int incomeId, DateOnly date)
