@@ -7,6 +7,7 @@
     <div class="border rounded box-shadow p-4 pb-0 bg-secondary" style="max-width: 75%;">
         <div class="from-create-user">
             <form id="loginUserForm" asp-controller="Home" class="container" asp-action="Login" method="post">
+                @Html.AntiForgeryToken()
                 <div class="row mb-3">
                     <label for="email" class="col-sm-3 col-form-label">Email:</label>
                     <div class="col-sm-9">
