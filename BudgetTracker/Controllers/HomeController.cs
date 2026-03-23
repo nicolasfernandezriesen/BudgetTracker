@@ -87,7 +87,7 @@ namespace BudgetTracker.Controllers
 
                 await _emailSender.SendEmailAsync(newUser.Email, "Confirmar cuenta", emailContent);
                 _logger.LogInformation("Registro exitoso. UserId: {UserId}. TraceId: {TraceId}", newUser.Id, HttpContext.TraceIdentifier);
-                return Ok(new { Message = "Usuario registrado exitosamente." });
+                return Ok(new { Message = "Usuario registrado exitosamente. Se ha enviado un mail para confirmar su cuenta." });
             }
             catch (Exception ex)
             {
@@ -191,7 +191,7 @@ namespace BudgetTracker.Controllers
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 _logger.LogWarning("Login rechazado por modelo inválido. TraceId: {TraceId}", HttpContext.TraceIdentifier);
-                return BadRequest(new { Message = string.Join("\n\n ", errors) });
+                return BadRequest(new { Error = "InvalidModel", Message = string.Join("\n\n ", errors) });
             }
 
             try
@@ -200,7 +200,7 @@ namespace BudgetTracker.Controllers
                 if (user == null)
                 {
                     _logger.LogWarning("Login fallido por usuario inexistente. TraceId: {TraceId}", HttpContext.TraceIdentifier);
-                    return BadRequest(new { Message = "No se encontro el usuario." });
+                    return Unauthorized(new { Error = "InvalidCredentials", Message = "Credenciales no validas." });
                 }
 
                 var result = await _signInManager.PasswordSignInAsync(user.UserName, loginUser.Password, isPersistent: true, lockoutOnFailure: true);
@@ -213,28 +213,65 @@ namespace BudgetTracker.Controllers
                 if (result.IsLockedOut)
                 {
                     _logger.LogWarning("Login bloqueado por lockout. UserId: {UserId}. TraceId: {TraceId}", user.Id, HttpContext.TraceIdentifier);
-                    return BadRequest(new { Message = "La cuenta está bloqueada debido a múltiples intentos fallidos de inicio de sesión." });
+                    return StatusCode(423, new { Error = "AccountLocked", Message = "La cuenta está bloqueada debido a múltiples intentos fallidos de inicio de sesión." });
                 }
 
                 if (result.IsNotAllowed)
                 {
                     _logger.LogWarning("Mail no confirmado. UserId: {UserId}. TraceId: {TraceId}", user.Id, HttpContext.TraceIdentifier);
-                    return BadRequest(new { Message = "El mail no ha sido confirmado." });
+                    return StatusCode(403, new { Error = "EmailNotConfirmed", Message = "El mail no ha sido confirmado." });
                 }
-
-                if (result.RequiresTwoFactor)
+                
+                if (result.RequiresTwoFactor) 
                 {
                     _logger.LogWarning("Login requiere 2FA. UserId: {UserId}. TraceId: {TraceId}", user.Id, HttpContext.TraceIdentifier);
-                    return BadRequest(new { Message = "Se requiere autenticación de dos factores." });
+                    return Unauthorized(new { Error = "TwoFactorRequired", Message = "Se requiere autenticación de dos factores." });
                 }
 
                 _logger.LogWarning("Login fallido por credenciales inválidas. UserId: {UserId}. TraceId: {TraceId}", user.Id, HttpContext.TraceIdentifier);
-                return BadRequest(new { Message = "Credenciales no validas." });
+                return Unauthorized(new { Error = "InvalidCredentials", Message = "Credenciales no validas." });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error inesperado durante login. TraceId: {TraceId}", HttpContext.TraceIdentifier);
                 return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+        // POST: HomeController/ReSendConfirmationEmail
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReSendConfirmationEmail([FromForm] string email)
+        {
+            _logger.LogInformation("Inicio de reenvío de email de confirmación. TraceId: {TraceId}", HttpContext.TraceIdentifier);
+            if (email == null)
+            {
+                _logger.LogWarning("Reenvío de confirmación rechazado por email nulo. TraceId: {TraceId}", HttpContext.TraceIdentifier);
+                return BadRequest(new { Error = "EmailNull", Message = "El email no puede ser nulo." });
+            }
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    _logger.LogInformation("Reenvío de confirmación procesado sin revelar existencia de cuenta. TraceId: {TraceId}", HttpContext.TraceIdentifier);
+                    return Ok(new { Message = "Se ha enviado el mail de confirmacion a su cuenta email." });
+                }
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var callbackUrl = Url.Action("ConfirmEmail", "Home", new { userId = user.Id, token }, protocol: HttpContext.Request.Scheme);
+                string emailContent = $@"
+                                    <h1>Bienvenido a Budget Tracker</h1>
+                                    <p>Para activar tu cuenta, haz clic en el siguiente enlace:
+                                        <a href='{callbackUrl}' style='padding:1px; color:black;'>Confirmar Cuenta</a>
+                                    </p>";
+                await _emailSender.SendEmailAsync(user.Email, "Confirmar cuenta", emailContent);
+                _logger.LogInformation("Correo de confirmación reenviado. UserId: {UserId}. TraceId: {TraceId}", user.Id, HttpContext.TraceIdentifier);
+                return Ok(new { Message = "Se ha enviado el mail de confirmacion a su cuenta email." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al reenviar email de confirmación. TraceId: {TraceId}", HttpContext.TraceIdentifier);
+                return BadRequest(new { Message = "No se pudo re-enviar el correo de confirmación." });
             }
         }
 

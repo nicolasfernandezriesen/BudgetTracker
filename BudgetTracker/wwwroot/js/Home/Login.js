@@ -20,6 +20,7 @@ async function LoginUser() {
         }
 
         const loadingSwal = showLoadingAlert('Iniciando sesion');
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
         const response = await fetch('/Home/Login', {
             method: 'POST',
@@ -29,16 +30,40 @@ async function LoginUser() {
 
         if (response.ok) {
             Swal.close();
-
             await showSuccessAlert('Verificado', responseData.message);
 
             window.location.href = '/User';
+        } else if (responseData.error === 'EmailNotConfirmed') {
+            Swal.close();
+            const confirmResult = await showConfirmationAlert('Email no confirmado', 'El email no ha sido confirmado. ¿Deseas reenviar el email de confirmación?');
+
+            if (confirmResult.isConfirmed) {
+                const email = dataObject['Email'];
+
+                const formDataResend = new FormData();
+                formDataResend.append('email', email);
+                formDataResend.append('__RequestVerificationToken', token);
+
+                const responseResend = await fetch('/Home/ReSendConfirmationEmail', {
+                    method: 'POST',
+                    body: formDataResend
+                });
+                const responseResendData = await responseResend.json();
+
+                if (responseResend.ok) {
+                    Swal.close();
+                    await showSuccessAlert('Email reenviado', responseResendData.message);
+                } else {
+                    throw new Error(responseResendData.message);
+                }
+            } else {
+                throw new Error(responseData.message);
+            }
         } else {
             throw new Error(responseData.message);
         }
     } catch (error) {
         Swal.close();
-
         await showErrorAlert("Error", error.message);
     } finally {
         Swal.close();
