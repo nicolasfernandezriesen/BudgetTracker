@@ -1,39 +1,50 @@
-﻿using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.Options;
-using System.Net;
-using System.Net.Mail;
+﻿using brevo_csharp.Api;
+using brevo_csharp.Model;
 using BudgetTracker.Models;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.Extensions.Options;
+using System.Diagnostics;
+using Task = System.Threading.Tasks.Task;
 
-namespace BudgetTracker.Services.EmailSender
+namespace BudgetTracker.Services.EmailSender;
+
+public class EmailSender : IEmailSender
 {
-    public class EmailSender : IEmailSender
+    private readonly EmailSettings _emailSettings;
+    private readonly TransactionalEmailsApi _apiInstance;
+
+    public EmailSender(IOptions<EmailSettings> emailSettings)
     {
-        private readonly EmailSettings _emailSettings;
+        _emailSettings = emailSettings.Value;
 
-        public EmailSender(IOptions<EmailSettings> emailSettings)
+        var configuration = new brevo_csharp.Client.Configuration();
+        configuration.ApiKey["api-key"] = _emailSettings.ApiKey;
+
+        _apiInstance = new TransactionalEmailsApi(configuration);
+    }
+
+    public async Task SendEmailAsync(string email, string subject, string htmlMessage)
+    {
+        SendSmtpEmailSender sender = new SendSmtpEmailSender(_emailSettings.SenderName, _emailSettings.SenderEmail);
+
+        SendSmtpEmailTo receiver = new SendSmtpEmailTo(email);
+        List<SendSmtpEmailTo> toList = new List<SendSmtpEmailTo> { receiver };
+
+        try
         {
-            _emailSettings = emailSettings.Value;
+            var sendSmtpEmail = new SendSmtpEmail(
+                sender: sender,
+                to: toList,
+                htmlContent: htmlMessage,
+                subject: subject
+            );
+
+            await _apiInstance.SendTransacEmailAsync(sendSmtpEmail);
         }
-
-        public async Task SendEmailAsync(string email, string subject, string htmlMessage)
+        catch (Exception ex)
         {
-            using (var client = new SmtpClient(_emailSettings.SmtpServer, _emailSettings.Port))
-            {
-                client.EnableSsl = true;
-                client.UseDefaultCredentials = false;
-                client.Credentials = new NetworkCredential(_emailSettings.Username, _emailSettings.Password);
-
-                var mailMessage = new MailMessage
-                {
-                    From = new MailAddress(_emailSettings.SenderEmail, _emailSettings.SenderName),
-                    Subject = subject,
-                    Body = htmlMessage,
-                    IsBodyHtml = true
-                };
-                mailMessage.To.Add(email);
-
-                await client.SendMailAsync(mailMessage);
-            }
+            Debug.WriteLine("Error to send the error with Brevo: " + ex.Message);
+            throw;
         }
     }
 }

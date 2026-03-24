@@ -38,6 +38,8 @@ async function LoginUser() {
             const confirmResult = await showConfirmationAlert('Email no confirmado', 'El email no ha sido confirmado. ¿Deseas reenviar el email de confirmación?');
 
             if (confirmResult.isConfirmed) {
+                const loadingResendSwal = showLoadingAlert('Re-enviando email de confirmación');
+
                 const email = dataObject['Email'];
 
                 const formDataResend = new FormData();
@@ -52,7 +54,7 @@ async function LoginUser() {
 
                 if (responseResend.ok) {
                     Swal.close();
-                    await showSuccessAlert('Email reenviado', responseResendData.message);
+                    await showSuccessAlert('Email re-enviado', responseResendData.message);
                 } else {
                     throw new Error(responseResendData.message);
                 }
