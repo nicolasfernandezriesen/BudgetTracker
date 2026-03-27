@@ -11,6 +11,8 @@
         public decimal TotalBill { get; set; }
 
         public List<Transaction> Transactions { get; set; } = new List<Transaction>();
+        public List<CategoryIncomeDto> CategoriesIncomes { get; set; } = new();
+        public List<CategoryBillDto> CategoriesBills { get; set; } = new();
     }
 
     public class Transaction
@@ -28,4 +30,15 @@
         Gasto
     }
 
+    public class CategoryIncomeDto
+    {
+        public string CategoryName { get; set; } = string.Empty;
+        public decimal TotalIncome { get; set; }
+    }
+
+    public class CategoryBillDto
+    {
+        public string CategoryName { get; set; } = string.Empty;
+        public decimal TotalBill { get; set; }
+    }
 }

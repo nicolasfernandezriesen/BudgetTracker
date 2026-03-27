@@ -62,21 +62,41 @@ namespace BudgetTracker.Controllers
                 var history = await _historyService.GetBillIncomeAndMonthlyTotalAsync(idUser, month, year);
                 var categories = await _categoryService.GetAllCategoriesAsync();
 
-                var categoriesTotals = categories.Select(c => new
-                {
-                    CategoryName = c.CategoryName,
-                    TotalIncome = history.Income.Where(i => i.CategoryId == c.CategoryId)?.Sum(i => i.IncomeAmount) ?? 0,
-                    TotalBill = history.Bill.Where(b => b.CategoryId == c.CategoryId)?.Sum(b => b.BillsAmount) ?? 0
-                }).ToList();
-
-                ViewBag.Categories = categoriesTotals;
-
                 DetailsViewModel historyViewModel = new DetailsViewModel();
 
                 historyViewModel.Month = month;
                 historyViewModel.Year = year;
                 historyViewModel.TotalIncome = history.MonthlyTotal?.TotalIncome ?? 0;
                 historyViewModel.TotalBill = history.MonthlyTotal?.TotalBill ?? 0;
+
+                foreach (var c in categories)
+                {
+                    var totalIncomeCat = history.Income
+                        .Where(i => i.CategoryId == c.CategoryId)
+                        .Sum(i => (decimal?)i.IncomeAmount) ?? 0;
+
+                    var totalBillCat = history.Bill
+                        .Where(b => b.CategoryId == c.CategoryId)
+                        .Sum(b => (decimal?)b.BillsAmount) ?? 0;
+
+                    if (totalIncomeCat != 0)
+                    {
+                        historyViewModel.CategoriesIncomes.Add(new CategoryIncomeDto
+                        {
+                            CategoryName = c.CategoryName,
+                            TotalIncome = totalIncomeCat
+                        });
+                    }
+
+                    if (totalBillCat != 0)
+                    {
+                        historyViewModel.CategoriesBills.Add(new CategoryBillDto
+                        {
+                            CategoryName = c.CategoryName,
+                            TotalBill = totalBillCat
+                        });
+                    }
+                }
 
                 foreach (Income income in history.Income)
                 {

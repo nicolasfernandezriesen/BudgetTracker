@@ -1,8 +1,14 @@
 ﻿@model BudgetTracker.ViewModels.History.DetailsViewModel;
+@using System.Text.Json
+
 @{
     string mes = new DateTime(1, Model.Month, 1).ToString("MMMM", new System.Globalization.CultureInfo("es-AR"));
 
-    var categories = ViewBag.Categories;
+    var labelsIngresos = JsonSerializer.Serialize(Model.CategoriesIncomes?.Select(c => c.CategoryName) ?? Array.Empty<string>());
+    var datosIngresos = JsonSerializer.Serialize(Model.CategoriesIncomes?.Select(c => c.TotalIncome) ?? Array.Empty<decimal>());
+
+    var labelsGastos = JsonSerializer.Serialize(Model.CategoriesBills?.Select(c => c.CategoryName) ?? Array.Empty<string>());
+    var datosGastos = JsonSerializer.Serialize(Model.CategoriesBills?.Select(c => c.TotalBill) ?? Array.Empty<decimal>());
 }
 
 <div class="d-flex flex-column justify-content-center align-items-center">
@@ -32,80 +38,228 @@
         </div>
 
         <div class="d-flex flex-row" style="width: 85vw;">
-            <table class="table table-bordered text-center" style="width: 70vw;">
+            <table class="table table-bordered text-center" style="width: 58vw;">
                 <thead>
                     <tr>
                         <th style="width: 6vw">Fecha</th>
-                        <th style="width: 50vw">Descripción</th>
+                        <th style="width: 40vw">Descripción</th>
                         <th style="width: 5vw">Tipo</th>
                         <th style="width: 10vw">Categoria</th>
-                        <th style="width: 12vw">Monto</th>
+                        <th style="width: 10vw">Monto</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @for (var numDay = 1; numDay <= DateTime.DaysInMonth(Model.Year, Model.Month); numDay++)
+                    @if (Model.Transactions != null && Model.Transactions.Any())
                     {
-                        var currentDate = new DateOnly(Model.Year, Model.Month, numDay);
-                        
-                        @if (Model.Transactions.Any(t => t.Date == currentDate))
+                        @for (var numDay = 1; numDay <= DateTime.DaysInMonth(Model.Year, Model.Month); numDay++)
                         {
-                            @foreach (var transaction in Model.Transactions.Where(t => t.Date == currentDate))
+                            var currentDate = new DateOnly(Model.Year, Model.Month, numDay);
+                        
+                            @if (Model.Transactions.Any(t => t.Date == currentDate))
                             {
-                                <tr>
-                                    <td style="width: 6vw">@transaction.Date.ToString("dd/MM/yyyy")</td>
-                                    <td style="width: 50vw">@transaction.Description</td>
-                                    <td style="width: 5vw">@transaction.Type</td>
-                                    <td style="width: 10vw">@transaction.Category</td>
-                                    <td style="width: 12vw">@transaction.Amount.ToString("C")</td>
-                                </tr>
+                                @foreach (var transaction in Model.Transactions.Where(t => t.Date == currentDate))
+                                {
+                                    <tr>
+                                        <td style="width: 6vw">@transaction.Date.ToString("dd/MM/yyyy")</td>
+                                        <td style="width: 40vw">@transaction.Description</td>
+                                        <td style="width: 5vw">@transaction.Type</td>
+                                        <td style="width: 10vw">@transaction.Category</td>
+                                        <td style="width: 10vw">@transaction.Amount.ToString("C")</td>
+                                    </tr>
+                                }
                             }
                         }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class="text-black" colspan="5">No hay entradas para este mes.</td>
+                        </tr>
                     }
                 </tbody>
             </table>
 
-            <div class="d-flex flex-column justify-content-center align-items-center ps-4" style="width: 15vw;">
-                <p class="text-center text-black mb-0 pb-0 border-bottom-0 border-top border-start border-end" style="width: 13vw;">
-                    <strong>Ingresos</strong>
-                </p>
-                <table class="table table-bordered text-center" style="width: 13vw;">
-                    <thead>
-                        <tr>
-                            <th>Categoria</th>
-                            <th>Monto</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var category in categories)
-                        {
+            <div class="d-flex flex-row justify-content-between ps-4" style="width: 27vw;">
+                <div class="d-flex flex-column align-items-center" style="width: 12.5vw;">
+                    <p class="text-center text-black mb-0 pb-0 border-bottom-0 border-top border-start border-end" style="width: 100%;">
+                        <strong>Ingresos</strong>
+                    </p>
+                    <table class="table table-bordered text-center" style="width: 100%;">
+                        <thead>
                             <tr>
-                                <td>@category.CategoryName</td>
-                                <td>@category.TotalIncome.ToString("C")</td>
+                                <th>Categoria</th>
+                                <th>Monto</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
-                <p class="text-center text-black mb-0 pb-0 border-bottom-0 border-top border-start border-end pt-1" style="width: 13vw;">
-                    <strong>Gastos</strong>
-                </p>
-                <table class="table table-bordered text-center" style="width: 13vw;">
-                    <thead>
-                        <tr>
-                            <th>Categoria</th>
-                            <th>Monto</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var category in categories)
-                        {
+                        </thead>
+                        <tbody>
+                            @if (Model.CategoriesIncomes != null && Model.CategoriesIncomes.Any())
+                            {
+                                @foreach (var category in Model.CategoriesIncomes)
+                                {
+                                    <tr>
+                                        <td>@category.CategoryName</td>
+                                        <td>@category.TotalIncome.ToString("C")</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td class="text-black" colspan="2">No hay ingresos para este mes.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <p class="text-center text-black mb-0 pb-0 border-bottom-0 border-top border-start border-end pt-1" style="width: 100%;">
+                        <strong>Gastos</strong>
+                    </p>
+                    <table class="table table-bordered text-center" style="width: 100%;">
+                        <thead>
                             <tr>
-                                <td>@category.CategoryName</td>
-                                <td>@category.TotalBill.ToString("C")</td>
+                                <th>Categoria</th>
+                                <th>Monto</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @if (Model.CategoriesBills != null && Model.CategoriesBills.Any())
+                            {
+                                @foreach (var category in Model.CategoriesBills)
+                                {
+                                    <tr>
+                                        <td>@category.CategoryName</td>
+                                        <td>@category.TotalBill.ToString("C")</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td class="text-black" colspan="2">No hay gastos para este mes.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-flex flex-column justify-content-center align-items-center" style="height: 32vh; width: 12.5vw;">
+                    @if (Model.CategoriesIncomes != null && Model.CategoriesIncomes.Any())
+                    {
+                        <div class="d-flex flex-column align-items-center mb-2" style="height: 16vh; width: 100%; max-width: 12.5vw;">
+                            <p class="mb-0"><strong>Distribucion de Ingreso</strong></p>
+                            <div style="position: relative; width: 100%; height: 16vh;">
+                                <canvas id="chartIngresos" style="width: 100%; height: 100%;"></canvas>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.CategoriesBills != null && Model.CategoriesBills.Any())
+                    {
+                        <div class="d-flex flex-column align-items-center" style="height: 16vh; width: 100%; max-width: 12.5vw;">
+                            <p class="mb-0"><strong>Distribucion de Gastos</strong></p>
+                            <div style="position: relative; width: 100%; height: 16vh;">
+                                <canvas id="chartGastos" style="width: 100%; height: 100%;"></canvas>
+                            </div>
+                        </div>
+                    }
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        
+        const canvasIngresos = document.getElementById('chartIngresos');
+        if (canvasIngresos) {
+            const ctxIngresos = canvasIngresos.getContext('2d');
+            new Chart(ctxIngresos, {
+                type: 'doughnut',
+                data: {
+                    labels: @Html.Raw(labelsIngresos),
+                    datasets: [{
+                        data: @Html.Raw(datosIngresos),
+                        backgroundColor: ['#2ecc71', '#27ae60', '#16a085', '#1abc9c', '#3498db'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            maxHeight: 60,
+                            labels: {
+                                color: 'black',
+                                font: {
+                                    size: 18,
+                                    weight: 'bold'
+                                },
+                                boxWidth: 16,
+                                boxHeight: 16,
+                                padding: 8
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            top: 0,
+                            bottom: 0
+                        }
+                    },
+                    radius: '90%',
+                    cutout: '30%'
+                }
+            });
+        }
+
+        const canvasGastos = document.getElementById('chartGastos');
+        if (canvasGastos) {
+            const ctxGastos = canvasGastos.getContext('2d');
+            new Chart(ctxGastos, {
+                type: 'doughnut',
+                data: {
+                    labels: @Html.Raw(labelsGastos),
+                    datasets: [{
+                        data: @Html.Raw(datosGastos),
+                        backgroundColor: ['#e74c3c', '#c0392b', '#e67e22', '#d35400', '#f1c40f'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            maxHeight: 60,
+                            labels: {
+                                color: 'black',
+                                font: {
+                                    size: 18,
+                                    weight: 'bold'
+                                },
+                                boxWidth: 16,
+                                boxHeight: 16,
+                                padding: 8
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            top: 0,
+                            bottom: 0
+                        }
+                    },
+                    radius: '90%',
+                    cutout: '30%'
+                }
+            });
+        }
+    });
+    </script>
+}
