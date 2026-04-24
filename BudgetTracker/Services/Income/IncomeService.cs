@@ -3,6 +3,8 @@ using BudgetTracker.Repositories.CategoryRepository;
 using BudgetTracker.Repositories.IncomeRepository;
 using BudgetTracker.Repositories.MonthlyTotalRepository;
 using BudgetTracker.ViewModels;
+using BudgetTracker.ViewModels.Category;
+using BudgetTracker.ViewModels.Income;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 
@@ -52,19 +54,22 @@ namespace BudgetTracker.Services.Income
         public async Task<IncomeCreateViewModel> GetCreateViewModelAsync()
         {
             var categories = await _categoryRepository.GetAllAsync();
-            var selectListItems = categories.Select(c => new SelectListItem
-            {
-                Value = c.CategoryId.ToString(),
-                Text = c.CategoryName
-            });
+            var groupedCategories = categories
+                .Where(c => c.parentcategoryid != null)
+                .GroupBy(c => categories.First(p => p.CategoryId == c.parentcategoryid).CategoryName)
+                .Select(g => new CategoryGroupViewModel
+                {
+                    GroupName = g.Key,
+                    SubCategories = g.ToList()
+                }).ToList();
 
             return new IncomeCreateViewModel
             {
-                Income = new BudgetTracker.Models.Income
+                Income = new Models.Income
                 {
                     IncomeDate = DateOnly.FromDateTime(DateTime.Now)
                 },
-                Categories = selectListItems
+                AvailableCategories = groupedCategories
             };
         }
 
@@ -104,6 +109,29 @@ namespace BudgetTracker.Services.Income
                 _logger.LogError(ex, "Error en CreateIncomeAsync. UserId: {UserId}", userId);
                 throw;
             }
+        }
+
+        public async Task<IncomeCreateViewModel> GetEditViewModelAsync(int userId, int incomeId)
+        {
+            var income = await _incomeRepository.GetIncomeByIdAndUserAsync(incomeId, userId);
+            if (income == null)
+            {
+                throw new InvalidOperationException("The income was not found.");
+            }
+            var categories = await _categoryRepository.GetAllAsync();
+            var groupedCategories = categories
+                .Where(c => c.parentcategoryid != null)
+                .GroupBy(c => categories.First(p => p.CategoryId == c.parentcategoryid).CategoryName)
+                .Select(g => new CategoryGroupViewModel
+                {
+                    GroupName = g.Key,
+                    SubCategories = g.ToList()
+                }).ToList();
+            return new IncomeCreateViewModel
+            {
+                Income = income,
+                AvailableCategories = groupedCategories
+            };
         }
 
         public async Task UpdateIncomeAsync(int userId, int incomeId, int amount, int categoryId, string desc, DateOnly date)

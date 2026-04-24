@@ -1,5 +1,6 @@
 using BudgetTracker.Models;
 using BudgetTracker.ViewModels;
+using BudgetTracker.ViewModels.Income;
 
 namespace BudgetTracker.Services.Income
 {
@@ -10,6 +11,7 @@ namespace BudgetTracker.Services.Income
         Task<DetailBillIncomeViewModel> GetIncomeDetailsAsync(int userId, DateOnly date);
         Task<IncomeCreateViewModel> GetCreateViewModelAsync();
         Task CreateIncomeAsync(int userId, int amount, int categoryId, string desc, DateOnly date);
+        Task<IncomeCreateViewModel> GetEditViewModelAsync(int userId, int incomeId);
         Task UpdateIncomeAsync(int userId, int incomeId, int amount, int categoryId, string desc, DateOnly date);
         Task DeleteIncomeAsync(int userId, int incomeId, DateOnly date);
     }
