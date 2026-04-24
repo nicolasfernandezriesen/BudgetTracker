@@ -3,6 +3,8 @@ using BudgetTracker.Repositories.BillRepository;
 using BudgetTracker.Repositories.CategoryRepository;
 using BudgetTracker.Repositories.MonthlyTotalRepository;
 using BudgetTracker.ViewModels;
+using BudgetTracker.ViewModels.Bill;
+using BudgetTracker.ViewModels.Category;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 
@@ -52,19 +54,19 @@ namespace BudgetTracker.Services.Bill
         public async Task<BillViewModel> GetCreateViewModelAsync()
         {
             var categories = await _categoryRepository.GetAllAsync();
-            var selectListItems = categories.Select(c => new SelectListItem
-            {
-                Value = c.CategoryId.ToString(),
-                Text = c.CategoryName
-            });
-
-            return new BillViewModel
-            {
-                Bill = new BudgetTracker.Models.Bill
+            var groupedCategories = categories
+                .Where(c => c.parentcategoryid != null)
+                .GroupBy(c => categories.First(p => p.CategoryId == c.parentcategoryid).CategoryName)
+                .Select(g => new CategoryGroupViewModel
                 {
-                    BillsDate = DateOnly.FromDateTime(DateTime.Now)
-                },
-                Categories = selectListItems
+                    GroupName = g.Key,
+                    SubCategories = g.ToList()
+                }).ToList();
+
+            return new BillViewModel 
+            {
+                Bill = new Models.Bill(),
+                AvailableCategories = groupedCategories
             };
         }
 
@@ -77,16 +79,19 @@ namespace BudgetTracker.Services.Bill
             }
 
             var categories = await _categoryRepository.GetAllAsync();
-            var selectListItems = categories.Select(c => new SelectListItem
-            {
-                Value = c.CategoryId.ToString(),
-                Text = c.CategoryName
-            });
+            var groupedCategories = categories
+                .Where(c => c.parentcategoryid != null)
+                .GroupBy(c => categories.First(p => p.CategoryId == c.parentcategoryid).CategoryName)
+                .Select(g => new CategoryGroupViewModel
+                {
+                    GroupName = g.Key,
+                    SubCategories = g.ToList()
+                }).ToList();
 
             return new BillViewModel
             {
                 Bill = bill,
-                Categories = selectListItems
+                AvailableCategories = groupedCategories
             };
         }
 

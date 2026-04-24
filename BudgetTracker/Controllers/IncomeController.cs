@@ -121,23 +121,7 @@ namespace BudgetTracker.Controllers
                 int userId = await GetUserIDAsync();
                 DateOnly date = DateOnly.Parse(selectedDate);
 
-                var income = await _incomeService.GetIncomeByUserAsync(userId);
-                var incomeItem = income.FirstOrDefault(i => i.IncomeId == id);
-
-                if (incomeItem == null)
-                {
-                    _logger.LogWarning("No se encontró ingreso para edición. IncomeId: {IncomeId}. UserId: {UserId}. TraceId: {TraceId}", id, userId, HttpContext.TraceIdentifier);
-                    return BadRequest(new { message = "The income does not exist." });
-                }
-
-                var categories = await _incomeService.GetCreateViewModelAsync();
-                
-                var viewModel = new IncomeCreateViewModel
-                {
-                    Income = incomeItem,
-                    Categories = categories.Categories
-                };
-
+                var viewModel = await _incomeService.GetEditViewModelAsync(userId, id);
                 _logger.LogInformation("Vista de edición de ingreso preparada. IncomeId: {IncomeId}. UserId: {UserId}. TraceId: {TraceId}", id, userId, HttpContext.TraceIdentifier);
                 return View(viewModel);
             }

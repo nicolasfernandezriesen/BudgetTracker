@@ -1,5 +1,6 @@
 using BudgetTracker.Models;
 using BudgetTracker.ViewModels;
+using BudgetTracker.ViewModels.Bill;
 
 namespace BudgetTracker.Services.Bill
 {

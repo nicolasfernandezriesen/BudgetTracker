@@ -1,12 +1,13 @@
 ﻿using BudgetTracker.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using BillModel = BudgetTracker.Models.Bill;
+using IncomeModel = BudgetTracker.Models.Income;
 
 namespace BudgetTracker.ViewModels
 {
     public class HistoryViewModel
     {
-        public List<Income> Income { get; set; }
-        public List<Bill> Bill { get; set; }
+        public List<IncomeModel> Income { get; set; }
+        public List<BillModel> Bill { get; set; }
         public MonthlyTotal MonthlyTotal { get; set; }
     }
 }
