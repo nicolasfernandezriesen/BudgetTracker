@@ -1,12 +1,11 @@
-using BudgetTracker.Models;
 using BudgetTracker.Repositories.BillRepository;
 using BudgetTracker.Repositories.CategoryRepository;
 using BudgetTracker.Repositories.MonthlyTotalRepository;
+using BillModel = BudgetTracker.Models.Bill;
+using MonthlyTotalModel = BudgetTracker.Models.MonthlyTotal;
 using BudgetTracker.ViewModels;
 using BudgetTracker.ViewModels.Bill;
 using BudgetTracker.ViewModels.Category;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.Logging;
 
 namespace BudgetTracker.Services.Bill
 {
@@ -25,12 +24,12 @@ namespace BudgetTracker.Services.Bill
             _logger = logger;
         }
 
-        public async Task<IEnumerable<BudgetTracker.Models.Bill>> GetBillsByUserAsync(int userId)
+        public async Task<IEnumerable<BillModel>> GetBillsByUserAsync(int userId)
         {
             return await _billRepository.GetBillsByUserIdAsync(userId);
         }
 
-        public async Task<IEnumerable<BudgetTracker.Models.Bill>> GetBillsByDateAsync(int userId, DateOnly date)
+        public async Task<IEnumerable<BillModel>> GetBillsByDateAsync(int userId, DateOnly date)
         {
             return await _billRepository.GetBillsByUserAndDateAsync(userId, date);
         }
@@ -51,7 +50,7 @@ namespace BudgetTracker.Services.Bill
             };
         }
 
-        public async Task<BillViewModel> GetCreateViewModelAsync()
+        public async Task<CreateViewModel> GetCreateViewModelAsync()
         {
             var categories = await _categoryRepository.GetAllAsync();
             var groupedCategories = categories
@@ -63,14 +62,13 @@ namespace BudgetTracker.Services.Bill
                     SubCategories = g.ToList()
                 }).ToList();
 
-            return new BillViewModel 
+            return new CreateViewModel 
             {
-                Bill = new Models.Bill(),
                 AvailableCategories = groupedCategories
             };
         }
 
-        public async Task<BillViewModel> GetEditViewModelAsync(int billId, int userId, DateOnly date)
+        public async Task<EditViewModel> GetEditViewModelAsync(int billId, int userId, DateOnly date)
         {
             var bill = await _billRepository.GetBillByIdAndUserAsync(billId, userId);
             if (bill == null)
@@ -88,38 +86,42 @@ namespace BudgetTracker.Services.Bill
                     SubCategories = g.ToList()
                 }).ToList();
 
-            return new BillViewModel
+            return new EditViewModel
             {
-                Bill = bill,
+                BillId = bill.BillsId,
+                BillsDate = bill.BillsDate,
+                BillsAmount = bill.BillsAmount,
+                BillsDesc = bill.BillsDesc,
+                CategoryId = bill.CategoryId,
                 AvailableCategories = groupedCategories
             };
         }
 
-        public async Task CreateBillAsync(int userId, int amount, int categoryId, string desc, DateOnly date)
+        public async Task CreateBillAsync(int userId, CreateViewModel model)
         {
             _logger.LogInformation("Inicio de CreateBillAsync. UserId: {UserId}", userId);
 
             try
             {
-                ValidateBillInput(amount, categoryId, date);
+                ValidateBillInput(model.BillsAmount, model.CategoryId, model.BillsDate);
 
-                var bill = new BudgetTracker.Models.Bill
-                {
+                var bill = new BillModel
+                 {
                     UserId = userId,
-                    BillsAmount = amount,
-                    BillsDesc = desc,
-                    BillsDate = date,
-                    CategoryId = categoryId
+                    BillsAmount = model.BillsAmount,
+                    BillsDesc = model.BillsDesc,
+                    BillsDate = model.BillsDate,
+                    CategoryId = model.CategoryId
                 };
 
-                var monthlyTotal = await GetOrCreateMonthlyTotalAsync(date.Month, date.Year, userId);
+                var monthlyTotal = await GetOrCreateMonthlyTotalAsync(model.BillsDate.Month, model.BillsDate.Year, userId);
                 monthlyTotal.TotalBill += bill.BillsAmount;
 
                 await _billRepository.AddAsync(bill);
                 _monthlyTotalRepository.Update(monthlyTotal);
                 await _billRepository.SaveChangesAsync();
 
-                _logger.LogInformation("CreateBillAsync completado. UserId: {UserId}. Amount: {Amount}. CategoryId: {CategoryId}", userId, amount, categoryId);
+                _logger.LogInformation("CreateBillAsync completado. UserId: {UserId}. Amount: {Amount}. CategoryId: {CategoryId}", userId, bill.BillsAmount, bill.CategoryId);
             }
             catch (ArgumentException ex)
             {
@@ -133,44 +135,43 @@ namespace BudgetTracker.Services.Bill
             }
         }
 
-        public async Task UpdateBillAsync(int userId, int billId, int amount, int categoryId, string desc, DateOnly date)
+        public async Task UpdateBillAsync(int userId, EditViewModel model)
         {
-            _logger.LogInformation("Inicio de UpdateBillAsync. UserId: {UserId}. BillId: {BillId}", userId, billId);
+            _logger.LogInformation("Inicio de UpdateBillAsync. UserId: {UserId}. BillId: {BillId}", userId, model.BillId);
 
             try
             {
-                ValidateBillInput(amount, categoryId, date);
-
-                var bill = await _billRepository.GetBillByIdAndUserAsync(billId, userId);
+                ValidateBillInput(model.BillsAmount, model.CategoryId, model.BillsDate);
+                var bill = await _billRepository.GetBillByIdAndUserAsync(model.BillId, userId);
                 if (bill == null)
                 {
-                    _logger.LogWarning("UpdateBillAsync falló: gasto no encontrado. UserId: {UserId}. BillId: {BillId}", userId, billId);
-                    throw new InvalidOperationException("Bill was not found.");
+                    _logger.LogWarning("UpdateBillAsync falló: gasto no encontrado. UserId: {UserId}. BillId: {BillId}", userId, model.BillId);
+                    throw new InvalidOperationException("Ocurrio un error con el gasto. Intentelo de nuevo.");
                 }
 
                 var monthlyTotal = await GetOrCreateMonthlyTotalAsync(bill.BillsDate.Month, bill.BillsDate.Year, userId);
                 monthlyTotal.TotalBill -= bill.BillsAmount;
-                monthlyTotal.TotalBill += amount;
+                monthlyTotal.TotalBill += model.BillsAmount;
 
-                bill.BillsAmount = amount;
-                bill.BillsDesc = desc;
-                bill.BillsDate = date;
-                bill.CategoryId = categoryId;
+                bill.BillsAmount = model.BillsAmount;
+                bill.BillsDesc = model.BillsDesc;
+                bill.BillsDate = model.BillsDate;
+                bill.CategoryId = model.CategoryId;
 
                 _monthlyTotalRepository.Update(monthlyTotal);
                 _billRepository.Update(bill);
                 await _billRepository.SaveChangesAsync();
 
-                _logger.LogInformation("UpdateBillAsync completado. UserId: {UserId}. BillId: {BillId}. Amount: {Amount}. CategoryId: {CategoryId}", userId, billId, amount, categoryId);
+                _logger.LogInformation("UpdateBillAsync completado. UserId: {UserId}. BillId: {BillId}. Amount: {Amount}. CategoryId: {CategoryId}", userId, model.BillId, model.BillsAmount, model.CategoryId);
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning(ex, "UpdateBillAsync rechazado por validación. UserId: {UserId}. BillId: {BillId}", userId, billId);
+                _logger.LogWarning(ex, "UpdateBillAsync rechazado por validación. UserId: {UserId}. BillId: {BillId}", userId, model.BillId);
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error en UpdateBillAsync. UserId: {UserId}. BillId: {BillId}", userId, billId);
+                _logger.LogError(ex, "Error en UpdateBillAsync. UserId: {UserId}. BillId: {BillId}", userId, model.BillId);
                 throw;
             }
         }
@@ -180,7 +181,7 @@ namespace BudgetTracker.Services.Bill
             var bill = await _billRepository.GetBillByIdAndUserAsync(billId, userId);
             if (bill == null)
             {
-                throw new InvalidOperationException("The expense was not found.");
+                throw new InvalidOperationException("Ocurrio un error con el gasto. Intentelo de nuevo.");
             }
 
             var monthlyTotal = await _monthlyTotalRepository.GetMonthlyTotalByMonthAndUserAsync(
@@ -196,13 +197,13 @@ namespace BudgetTracker.Services.Bill
             await _billRepository.SaveChangesAsync();
         }
 
-        private async Task<BudgetTracker.Models.MonthlyTotal> GetOrCreateMonthlyTotalAsync(int month, int year, int userId)
+        private async Task<MonthlyTotalModel> GetOrCreateMonthlyTotalAsync(int month, int year, int userId)
         {
             var monthlyTotal = await _monthlyTotalRepository.GetMonthlyTotalByMonthAndUserAsync(month, year, userId);
 
             if (monthlyTotal == null)
             {
-                monthlyTotal = new BudgetTracker.Models.MonthlyTotal
+                monthlyTotal = new MonthlyTotalModel
                 {
                     MonthlyTotalsYear = year,
                     MonthlyTotalsMonth = month,
@@ -217,7 +218,7 @@ namespace BudgetTracker.Services.Bill
             return monthlyTotal;
         }
 
-        private void ValidateBillInput(int amount, int categoryId, DateOnly date)
+        private void ValidateBillInput(decimal amount, int categoryId, DateOnly date)
         {
             if (date > DateOnly.FromDateTime(DateTime.Now.AddMonths(2)))
             {

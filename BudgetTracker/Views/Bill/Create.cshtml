@@ -1,4 +1,4 @@
-﻿@model BudgetTracker.ViewModels.Bill.BillViewModel
+﻿@model BudgetTracker.ViewModels.Bill.CreateViewModel
 
 <div class="d-flex flex-column justify-content-center align-items-center" style="height: 65vh;">
 
@@ -15,13 +15,13 @@
         <form asp-controller="Bill" asp-action="Create" id="createBillForm">
             <div class="p-2">
                 <div class="form-group text-center">
-                    <label asp-for="Bill.BillsAmount" class="form-label pb-1">Monto del gasto: </label><br />
-                    <input asp-for="Bill.BillsAmount" class="form-control text-center" type="number" name="amount" min="0" style="max-width: 10vw; display:inline;" required />
+                    <label asp-for="BillsAmount" class="form-label pb-1">Monto del gasto: </label><br />
+                    <input asp-for="BillsAmount" class="form-control text-center" type="number" name="BillsAmount" min="0" style="max-width: 10vw; display:inline;" required />
                 </div>
                 <div class="form-group text-center">
-                    <label asp-for="Bill.CategoryId" class="form-label pt-2 pb-1">Categoria (Seleccionar uno): </label>
+                    <label asp-for="CategoryId" class="form-label pt-2 pb-1">Categoria (Seleccionar uno): </label>
                     <div class="d-flex flex-wrap m-auto" style="max-width: 60%;">
-                        <select id="category-select" asp-for="Bill.CategoryId" name="categoryId" class="form-control" placeholder="Selecciona o busca...">
+                        <select id="category-select" asp-for="CategoryId" name="CategoryId" class="form-control" placeholder="Selecciona o busca...">
                             <option value="">Buscar categoría...</option>
         
                             @foreach (var group in Model.AvailableCategories)
@@ -37,12 +37,12 @@
                     </div>
                 </div>
                 <div class="form-group text-center">
-                    <label asp-for="Bill.BillsDesc" class="form-label pt-2 pb-1">Descripcion (opcional): </label>
-                    <textarea asp-for="Bill.BillsDesc" class="form-control" name="desc"></textarea>
+                    <label asp-for="BillsDesc" class="form-label pt-2 pb-1">Descripción (opcional): </label>
+                    <textarea asp-for="BillsDesc" class="form-control" name="BillsDesc"></textarea>
                 </div>
                 <div class="form-group pt-2 text-center">
-                    <label asp-for="Bill.BillsDate" class="form-label pt-2 pb-1 pe-4">Fecha: </label><br />
-                    <input asp-for="Bill.BillsDate" type="date" class="form-control text-center" name="date" style="max-width: 10vw; display:inline;" min="@DateTime.Now.AddMonths(-2).ToString("yyyy-MM-dd")" max="@DateTime.Now.AddMonths(2).ToString("yyyy-MM-dd")" required />
+                    <label asp-for="BillsDate" class="form-label pt-2 pb-1 pe-4">Fecha: </label><br />
+                    <input asp-for="BillsDate" type="date" class="form-control text-center" name="BillsDate" style="max-width: 10vw; display:inline;" min="@DateTime.Now.AddMonths(-2).ToString("yyyy-MM-dd")" max="@DateTime.Now.AddMonths(2).ToString("yyyy-MM-dd")" required />
                 </div>
             </div>
 

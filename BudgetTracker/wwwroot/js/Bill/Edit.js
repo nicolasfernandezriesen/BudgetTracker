@@ -34,7 +34,7 @@ async function SaveEdit() {
     });
 
     try {
-        IsValidBill(dataObject['amount'], dataObject['date']);
+        IsValidBill(dataObject['BillsAmount'], dataObject['BillsDate']);
 
         const loadingSwal = showLoadingAlert('Guardando gasto');
 
@@ -42,14 +42,19 @@ async function SaveEdit() {
             method: 'POST',
             body: formData
         });
+        const data = await response.json();
 
         if (response.ok) {
-            await showSuccessAlert("Guardado", 'Se editado correctamente el gasto.');
-            window.location.href = `/Bill/Details/?selectedDate=${dataObject['date']}`;
+            Swal.close();
+
+            await showSuccessAlert("Guardado", data.message);
+            window.location.href = `/Bill/Details/?selectedDate=${dataObject['BillsDate']}`;
         } else {
-            throw new Error('Ah ocurrido un error, vuelve a intertarlo, si el error persiste, contacte a soporte.');
+            throw new Error(data.message);
         }
     } catch (error) {
+        Swal.close();
+
         await showErrorAlert("Error", error.message);
     } finally {
         Swal.close();

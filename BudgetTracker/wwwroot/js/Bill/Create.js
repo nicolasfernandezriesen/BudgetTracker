@@ -39,7 +39,7 @@ async function CreateBill() {
     });
 
     try {
-        IsValidBill(dataObject['amount'], dataObject['categoryId'], dataObject['date']);
+        IsValidBill(dataObject['BillsAmount'], dataObject['CategoryId'], dataObject['BillsDate']);
 
         const loadingSwal = showLoadingAlert('Creando gasto');
 
@@ -47,14 +47,19 @@ async function CreateBill() {
             method: 'POST',
             body: formData,
         });
+        const data = await response.json();
 
         if (response.ok) {
-            await showSuccessAlert('¡Éxito!', 'El gasto se ha creado exitosamente.');
+            Swal.close();
+
+            await showSuccessAlert('¡Éxito!', data.message);
             window.location.href = '/User';
         } else {
-            throw new Error('Ah ocurrido un error, vuelve a intertarlo, si el error persiste, contacte a soporte.');
+            throw new Error(data.message);
         }
     } catch (error) {
+        Swal.close();
+
         await showErrorAlert("Error", error.message);
     } finally {
         Swal.close();
