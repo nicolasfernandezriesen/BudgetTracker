@@ -1,7 +1,5 @@
-using BudgetTracker.Models;
 using BudgetTracker.Repositories.UserRepository;
 using BudgetTracker.ViewModels.User;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text;

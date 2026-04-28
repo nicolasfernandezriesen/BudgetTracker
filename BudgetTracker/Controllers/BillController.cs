@@ -1,6 +1,6 @@
 ﻿using BudgetTracker.Models;
 using BudgetTracker.Services.Bill;
-using BudgetTracker.ViewModels;
+using BudgetTracker.ViewModels.Bill;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -66,12 +66,12 @@ namespace BudgetTracker.Controllers
 
             try
             {
-                var viewModel = await _billService.GetCreateViewModelAsync();
+                CreateViewModel viewModel = await _billService.GetCreateViewModelAsync();
 
                 if (!string.IsNullOrEmpty(selectedDate))
                 {
                     DateOnly date = DateOnly.Parse(selectedDate);
-                    viewModel.Bill.BillsDate = date;
+                    viewModel.BillsDate = date;
                 }
 
                 _logger.LogInformation("Vista de creación de gasto preparada. TraceId: {TraceId}", HttpContext.TraceIdentifier);
@@ -87,26 +87,32 @@ namespace BudgetTracker.Controllers
         // POST: BillController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(int amount, int categoryId, string desc, DateOnly date)
+        public async Task<IActionResult> Create(CreateViewModel model)
         {
             _logger.LogInformation("Inicio de creación de gasto. TraceId: {TraceId}", HttpContext.TraceIdentifier);
+
+            if (!ModelState.IsValid) {
+                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                _logger.LogWarning("Creación de gasto rechazada por validación de modelo. TraceId: {TraceId}", HttpContext.TraceIdentifier);
+                return BadRequest(new { Message = string.Join("\n\n ", errors) });
+            }
 
             try
             {
                 int userId = await GetUserIDAsync();
-                await _billService.CreateBillAsync(userId, amount, categoryId, desc, date);
+                await _billService.CreateBillAsync(userId, model);
                 _logger.LogInformation("Gasto creado correctamente. UserId: {UserId}. TraceId: {TraceId}", userId, HttpContext.TraceIdentifier);
-                return Ok(new { message = "The bill was saved." });
+                return Ok(new { message = "El gasto fue creado exitosamente." });
             }
             catch (ArgumentException ex)
             {
                 _logger.LogWarning(ex, "Creación de gasto rechazada por validación. TraceId: {TraceId}", HttpContext.TraceIdentifier);
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = "Ocurrio un error al validar los datos del gasto. Vuelve a intentarlo." });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error inesperado al crear gasto. TraceId: {TraceId}", HttpContext.TraceIdentifier);
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = "Ocurrio un error inesperado al crear el gasto. Intente de nuevo, si persiste el error, contacte a soporte." });
             }
         }
 
@@ -114,6 +120,12 @@ namespace BudgetTracker.Controllers
         public async Task<IActionResult> Edit(int id, string selectedDate)
         {
             _logger.LogInformation("Inicio de vista de edición de gasto. BillId: {BillId}. TraceId: {TraceId}", id, HttpContext.TraceIdentifier);
+
+            if (string.IsNullOrEmpty(selectedDate) || id <= 0)
+            {
+                _logger.LogWarning("Solicitud de edición de gasto con parámetros inválidos. BillId: {BillId}. SelectedDate: {SelectedDate}. TraceId: {TraceId}", id, selectedDate, HttpContext.TraceIdentifier);
+                return BadRequest(new { message = "Ocurrio un error al procesar la solicitud. Vuelve a intentarlo." });
+            }
 
             try
             {
@@ -139,31 +151,37 @@ namespace BudgetTracker.Controllers
         // POST: BillController/Edit?selectedDate=8/9/2024
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int amount, int categoryId, string desc, DateOnly date, int id)
+        public async Task<IActionResult> Edit(EditViewModel model)
         {
-            _logger.LogInformation("Inicio de actualización de gasto. BillId: {BillId}. TraceId: {TraceId}", id, HttpContext.TraceIdentifier);
+            _logger.LogInformation("Inicio de actualización de gasto. BillId: {BillId}. TraceId: {TraceId}", model.BillId, HttpContext.TraceIdentifier);
+
+            if (!ModelState.IsValid) {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                _logger.LogWarning("Modelo de actualización de gasto no válido. BillId: {BillId}. TraceId: {TraceId}", model.BillId, HttpContext.TraceIdentifier);
+                return BadRequest(new { Message = string.Join("\n\n ", errors) });
+            }
 
             try
             {
                 int userId = await GetUserIDAsync();
-                await _billService.UpdateBillAsync(userId, id, amount, categoryId, desc, date);
-                _logger.LogInformation("Gasto actualizado correctamente. BillId: {BillId}. UserId: {UserId}. TraceId: {TraceId}", id, userId, HttpContext.TraceIdentifier);
-                return Ok(new { message = "The expense has been updated successfully." });
+                await _billService.UpdateBillAsync(userId, model);
+                _logger.LogInformation("Gasto actualizado correctamente. BillId: {BillId}. UserId: {UserId}. TraceId: {TraceId}", model.BillId, userId, HttpContext.TraceIdentifier);
+                return Ok(new { message = "El gasto fue actualizado correctamente." });
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Actualización de gasto falló por regla de negocio. BillId: {BillId}. TraceId: {TraceId}", id, HttpContext.TraceIdentifier);
+                _logger.LogWarning(ex, "Actualización de gasto falló por regla de negocio. BillId: {BillId}. TraceId: {TraceId}", model.BillId, HttpContext.TraceIdentifier);
                 return BadRequest(new { message = ex.Message });
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning(ex, "Actualización de gasto rechazada por validación. BillId: {BillId}. TraceId: {TraceId}", id, HttpContext.TraceIdentifier);
-                return BadRequest(new { message = ex.Message });
+                _logger.LogWarning(ex, "Actualización de gasto rechazada por validación. BillId: {BillId}. TraceId: {TraceId}", model.BillId, HttpContext.TraceIdentifier);
+                return BadRequest(new { message = "Ocurrio un error al validar los datos del gasto. Vuelve a intentarlo." });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error inesperado al actualizar gasto. BillId: {BillId}. TraceId: {TraceId}", id, HttpContext.TraceIdentifier);
-                return BadRequest(new { message = ex.Message });
+                _logger.LogError(ex, "Error inesperado al actualizar gasto. BillId: {BillId}. TraceId: {TraceId}", model.BillId, HttpContext.TraceIdentifier);
+                return BadRequest(new { message = "Ocurrio un error inesperado al actualizar el gasto. Intente de nuevo, si persiste el error, contacte a soporte." });
             }
         }
 
