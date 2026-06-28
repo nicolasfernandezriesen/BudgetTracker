@@ -35,7 +35,7 @@ async function SaveEdit() {
 
 
     try {
-        IsValidIncome(dataObject['amount'], dataObject['date']);
+        IsValidIncome(dataObject['IncomeAmount'], dataObject['IncomeDate']);
 
         const loadingSwal = showLoadingAlert('Guardando ingreso');
 
@@ -46,7 +46,7 @@ async function SaveEdit() {
 
         if (response.ok) {
             await showSuccessAlert("Guardado", 'Se ha editado correctamente.');
-            window.location.href = `/Income/Details/?selectedDate=${dataObject['date']}`;
+            window.location.href = `/Income/Details/?selectedDate=${dataObject['IncomeDate']}`;
         } else {
             throw new Error('Ah ocurrido un error, vuelve a intertarlo, si el error persiste, contacte a soporte.');
         }
