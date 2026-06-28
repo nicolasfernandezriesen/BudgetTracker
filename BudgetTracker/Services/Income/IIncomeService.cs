@@ -1,4 +1,4 @@
-using BudgetTracker.Models;
+using IncomeModel = BudgetTracker.Models.Income;
 using BudgetTracker.ViewModels;
 using BudgetTracker.ViewModels.Income;
 
@@ -6,13 +6,13 @@ namespace BudgetTracker.Services.Income
 {
     public interface IIncomeService
     {
-        Task<IEnumerable<BudgetTracker.Models.Income>> GetIncomeByUserAsync(int userId);
-        Task<IEnumerable<BudgetTracker.Models.Income>> GetIncomeByDateAsync(int userId, DateOnly date);
+        Task<IEnumerable<IncomeModel>> GetIncomeByUserAsync(int userId);
+        Task<IEnumerable<IncomeModel>> GetIncomeByDateAsync(int userId, DateOnly date);
         Task<DetailBillIncomeViewModel> GetIncomeDetailsAsync(int userId, DateOnly date);
-        Task<IncomeCreateViewModel> GetCreateViewModelAsync();
-        Task CreateIncomeAsync(int userId, int amount, int categoryId, string desc, DateOnly date);
-        Task<IncomeCreateViewModel> GetEditViewModelAsync(int userId, int incomeId);
-        Task UpdateIncomeAsync(int userId, int incomeId, int amount, int categoryId, string desc, DateOnly date);
+        Task<CreateViewModel> GetCreateViewModelAsync();
+        Task CreateIncomeAsync(int userId, CreateViewModel viewModel);
+        Task<EditViewModel> GetEditViewModelAsync(int userId, int incomeId);
+        Task UpdateIncomeAsync(int userId, int incomeId, EditViewModel viewModel);
         Task DeleteIncomeAsync(int userId, int incomeId, DateOnly date);
     }
 }

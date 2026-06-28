@@ -1,4 +1,4 @@
-﻿@model BudgetTracker.ViewModels.Income.IncomeCreateViewModel
+﻿@model BudgetTracker.ViewModels.Income.CreateViewModel
 
 <div class="d-flex flex-column justify-content-center align-items-center" style="height: 65vh;">
 
@@ -15,13 +15,13 @@
         <form asp-controller="Income" asp-action="Create" id="createIncomeForm">
             <div class="p-2">
                 <div class="form-group text-center">
-                    <label asp-for="Income.IncomeAmount" class="form-label pb-1">Monto del ingreso: </label><br />
-                    <input asp-for="Income.IncomeAmount" class="form-control text-center" type="number" name="amount" min="0" style="max-width: 10vw; display:inline;" required  />
+                    <label asp-for="IncomeAmount" class="form-label pb-1">Monto del ingreso: </label><br />
+                    <input asp-for="IncomeAmount" class="form-control text-center" type="number" name="IncomeAmount" min="0" style="max-width: 10vw; display:inline;" required />
                 </div>
                 <div class="form-group text-center">
-                    <label asp-for="Income.CategoryId" class="form-label pt-2 pb-1">Categoria (Seleccionar uno): </label>
+                    <label asp-for="CategoryId" class="form-label pt-2 pb-1">Categoria (Seleccionar uno): </label>
                     <div class="d-flex flex-wrap m-auto" style="max-width: 60%;">
-                        <select id="category-select" asp-for="Income.CategoryId" name="categoryId" class="form-control" placeholder="Selecciona o busca...">
+                        <select id="category-select" asp-for="CategoryId" name="CategoryId" class="form-control" placeholder="Selecciona o busca...">
                             <option value="">Buscar categoría...</option>
         
                             @foreach (var group in Model.AvailableCategories)
@@ -37,12 +37,12 @@
                     </div>
                 </div>
                 <div class="form-group text-center">
-                    <label asp-for="Income.IncomeDesc" class="form-label pt-2 pb-1">Descripcion (opcional): </label>
-                    <textarea asp-for="Income.IncomeDesc" class="form-control" name="desc"></textarea>
+                    <label asp-for="IncomeDesc" class="form-label pt-2 pb-1">Descripcion (opcional): </label>
+                    <textarea asp-for="IncomeDesc" class="form-control" name="IncomeDesc"></textarea>
                 </div>
                 <div class="form-group pt-2 text-center">
-                    <label asp-for="Income.IncomeDate" class="form-label pt-2 pb-1 pe-4">Fecha: </label><br />
-                    <input asp-for="Income.IncomeDate" type="date" class="form-control text-center" name="date" style="max-width: 10vw; display:inline;" min="@DateTime.Now.AddMonths(-2).ToString("yyyy-MM-dd")" max="@DateTime.Now.AddMonths(2).ToString("yyyy-MM-dd")" required />
+                    <label asp-for="IncomeDate" class="form-label pt-2 pb-1 pe-4">Fecha: </label><br />
+                    <input asp-for="IncomeDate" type="date" class="form-control text-center" name="IncomeDate" style="max-width: 10vw; display:inline;" min="@DateTime.Now.AddMonths(-2).ToString("yyyy-MM-dd")" max="@DateTime.Now.AddMonths(2).ToString("yyyy-MM-dd")" required />
                 </div>
             </div>
 

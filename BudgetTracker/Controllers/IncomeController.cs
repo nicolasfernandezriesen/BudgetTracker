@@ -1,10 +1,9 @@
 ﻿using BudgetTracker.Models;
 using BudgetTracker.Services.Income;
-using BudgetTracker.ViewModels;
+using BudgetTracker.ViewModels.Income;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace BudgetTracker.Controllers
 {
@@ -67,12 +66,12 @@ namespace BudgetTracker.Controllers
 
             try
             {
-                var viewModel = await _incomeService.GetCreateViewModelAsync();
+                CreateViewModel viewModel = await _incomeService.GetCreateViewModelAsync();
 
                 if (!string.IsNullOrEmpty(selectedDate))
                 {
                     DateOnly date = DateOnly.Parse(selectedDate);
-                    viewModel.Income.IncomeDate = date;
+                    viewModel.IncomeDate = date;
                 }
 
                 _logger.LogInformation("Vista de creación de ingreso preparada. TraceId: {TraceId}", HttpContext.TraceIdentifier);
@@ -88,14 +87,21 @@ namespace BudgetTracker.Controllers
         // POST: IncomeController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(int amount, int categoryId, string desc, DateOnly date)
+        public async Task<IActionResult> Create(CreateViewModel viewModel)
         {
             _logger.LogInformation("Inicio de creación de ingreso. TraceId: {TraceId}", HttpContext.TraceIdentifier);
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                _logger.LogWarning("Creación de ingreso rechazada por validación. Errores: {Errors}. TraceId: {TraceId}", string.Join(", ", errors), HttpContext.TraceIdentifier);
+                return BadRequest(new { Message = string.Join("\n\n ", errors) });
+            }
 
             try
             {
                 int userId = await GetUserIDAsync();
-                await _incomeService.CreateIncomeAsync(userId, amount, categoryId, desc, date);
+                await _incomeService.CreateIncomeAsync(userId, viewModel);
                 _logger.LogInformation("Ingreso creado correctamente. UserId: {UserId}. TraceId: {TraceId}", userId, HttpContext.TraceIdentifier);
                 return Ok(new { message = "The new income has been saved successfully." });
             }
@@ -134,30 +140,37 @@ namespace BudgetTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int amount, int categoryId, string desc, DateOnly date, int id)
+        public async Task<IActionResult> Edit(EditViewModel viewModel)
         {
-            _logger.LogInformation("Inicio de actualización de ingreso. IncomeId: {IncomeId}. TraceId: {TraceId}", id, HttpContext.TraceIdentifier);
+            _logger.LogInformation("Inicio de actualización de ingreso. IncomeId: {IncomeId}. TraceId: {TraceId}", viewModel.IncomeId, HttpContext.TraceIdentifier);
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                _logger.LogWarning("Actualización de ingreso rechazada por validación. Errores: {Errors}. TraceId: {TraceId}", string.Join(", ", errors), HttpContext.TraceIdentifier);
+                return BadRequest(new { Message = string.Join("\n\n ", errors) });
+            }
 
             try
             {
                 int userId = await GetUserIDAsync();
-                await _incomeService.UpdateIncomeAsync(userId, id, amount, categoryId, desc, date);
-                _logger.LogInformation("Ingreso actualizado correctamente. IncomeId: {IncomeId}. UserId: {UserId}. TraceId: {TraceId}", id, userId, HttpContext.TraceIdentifier);
+                await _incomeService.UpdateIncomeAsync(userId, viewModel.IncomeId, viewModel);
+                _logger.LogInformation("Ingreso actualizado correctamente. IncomeId: {IncomeId}. UserId: {UserId}. TraceId: {TraceId}", viewModel.IncomeId, userId, HttpContext.TraceIdentifier);
                 return Ok(new { message = "The income has been successfully updated." });
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Actualización de ingreso falló por regla de negocio. IncomeId: {IncomeId}. TraceId: {TraceId}", id, HttpContext.TraceIdentifier);
+                _logger.LogWarning(ex, "Actualización de ingreso falló por regla de negocio. IncomeId: {IncomeId}. TraceId: {TraceId}", viewModel.IncomeId, HttpContext.TraceIdentifier);
                 return BadRequest(new { message = ex.Message });
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning(ex, "Actualización de ingreso rechazada por validación. IncomeId: {IncomeId}. TraceId: {TraceId}", id, HttpContext.TraceIdentifier);
+                _logger.LogWarning(ex, "Actualización de ingreso rechazada por validación. IncomeId: {IncomeId}. TraceId: {TraceId}", viewModel.IncomeId, HttpContext.TraceIdentifier);
                 return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error inesperado al actualizar ingreso. IncomeId: {IncomeId}. TraceId: {TraceId}", id, HttpContext.TraceIdentifier);
+                _logger.LogError(ex, "Error inesperado al actualizar ingreso. IncomeId: {IncomeId}. TraceId: {TraceId}", viewModel.IncomeId, HttpContext.TraceIdentifier);
                 return BadRequest(new { message = ex.Message });
             }
         }

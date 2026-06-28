@@ -38,7 +38,7 @@ async function CreateIncome() {
     });
 
     try {
-        IsValidIncome(dataObject['amount'], dataObject['categoryId'], dataObject['date']);
+        IsValidIncome(dataObject['IncomeAmount'], dataObject['CategoryId'], dataObject['IncomeDate']);
 
         const loadingSwal = showLoadingAlert('Creando ingreso');
 

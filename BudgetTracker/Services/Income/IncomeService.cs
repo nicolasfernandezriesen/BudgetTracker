@@ -1,12 +1,11 @@
-using BudgetTracker.Models;
 using BudgetTracker.Repositories.CategoryRepository;
 using BudgetTracker.Repositories.IncomeRepository;
 using BudgetTracker.Repositories.MonthlyTotalRepository;
+using IncomeModel = BudgetTracker.Models.Income;
+using MonthlyTotalModel = BudgetTracker.Models.MonthlyTotal;
 using BudgetTracker.ViewModels;
 using BudgetTracker.ViewModels.Category;
 using BudgetTracker.ViewModels.Income;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.Logging;
 
 namespace BudgetTracker.Services.Income
 {
@@ -25,12 +24,12 @@ namespace BudgetTracker.Services.Income
             _logger = logger;
         }
 
-        public async Task<IEnumerable<BudgetTracker.Models.Income>> GetIncomeByUserAsync(int userId)
+        public async Task<IEnumerable<IncomeModel>> GetIncomeByUserAsync(int userId)
         {
             return await _incomeRepository.GetIncomeByUserIdAsync(userId);
         }
 
-        public async Task<IEnumerable<BudgetTracker.Models.Income>> GetIncomeByDateAsync(int userId, DateOnly date)
+        public async Task<IEnumerable<IncomeModel>> GetIncomeByDateAsync(int userId, DateOnly date)
         {
             return await _incomeRepository.GetIncomeByUserAndDateAsync(userId, date);
         }
@@ -51,7 +50,7 @@ namespace BudgetTracker.Services.Income
             };
         }
 
-        public async Task<IncomeCreateViewModel> GetCreateViewModelAsync()
+        public async Task<CreateViewModel> GetCreateViewModelAsync()
         {
             var categories = await _categoryRepository.GetAllAsync();
             var groupedCategories = categories
@@ -63,41 +62,38 @@ namespace BudgetTracker.Services.Income
                     SubCategories = g.ToList()
                 }).ToList();
 
-            return new IncomeCreateViewModel
+            return new CreateViewModel
             {
-                Income = new Models.Income
-                {
-                    IncomeDate = DateOnly.FromDateTime(DateTime.Now)
-                },
+                IncomeDate = DateOnly.FromDateTime(DateTime.Now),
                 AvailableCategories = groupedCategories
             };
         }
 
-        public async Task CreateIncomeAsync(int userId, int amount, int categoryId, string desc, DateOnly date)
+        public async Task CreateIncomeAsync(int userId, CreateViewModel viewmodel)
         {
             _logger.LogInformation("Inicio de CreateIncomeAsync. UserId: {UserId}", userId);
 
             try
             {
-                ValidateIncomeInput(amount, categoryId, date);
+                ValidateIncomeInput(viewmodel.IncomeAmount, viewmodel.CategoryId, viewmodel.IncomeDate);
 
-                var income = new BudgetTracker.Models.Income
+                var income = new IncomeModel
                 {
                     UserId = userId,
-                    IncomeAmount = amount,
-                    IncomeDesc = desc,
-                    IncomeDate = date,
-                    CategoryId = categoryId
+                    IncomeAmount = viewmodel.IncomeAmount,
+                    IncomeDesc = viewmodel.IncomeDesc,
+                    IncomeDate = viewmodel.IncomeDate,
+                    CategoryId = viewmodel.CategoryId
                 };
 
-                var monthlyTotal = await GetOrCreateMonthlyTotalAsync(date.Month, date.Year, userId);
+                var monthlyTotal = await GetOrCreateMonthlyTotalAsync(viewmodel.IncomeDate.Month, viewmodel.IncomeDate.Year, userId);
                 monthlyTotal.TotalIncome += income.IncomeAmount;
 
                 await _incomeRepository.AddAsync(income);
                 _monthlyTotalRepository.Update(monthlyTotal);
                 await _incomeRepository.SaveChangesAsync();
 
-                _logger.LogInformation("CreateIncomeAsync completado. UserId: {UserId}. Amount: {Amount}. CategoryId: {CategoryId}", userId, amount, categoryId);
+                _logger.LogInformation("CreateIncomeAsync completado. UserId: {UserId}. Amount: {Amount}. CategoryId: {CategoryId}", userId, viewmodel.IncomeAmount, viewmodel.CategoryId);
             }
             catch (ArgumentException ex)
             {
@@ -111,7 +107,7 @@ namespace BudgetTracker.Services.Income
             }
         }
 
-        public async Task<IncomeCreateViewModel> GetEditViewModelAsync(int userId, int incomeId)
+        public async Task<EditViewModel> GetEditViewModelAsync(int userId, int incomeId)
         {
             var income = await _incomeRepository.GetIncomeByIdAndUserAsync(incomeId, userId);
             if (income == null)
@@ -127,20 +123,24 @@ namespace BudgetTracker.Services.Income
                     GroupName = g.Key,
                     SubCategories = g.ToList()
                 }).ToList();
-            return new IncomeCreateViewModel
+            return new EditViewModel
             {
-                Income = income,
+                IncomeId = income.IncomeId,
+                IncomeDate = income.IncomeDate,
+                CategoryId = income.CategoryId,
+                IncomeAmount = income.IncomeAmount,
+                IncomeDesc = income.IncomeDesc,
                 AvailableCategories = groupedCategories
             };
         }
 
-        public async Task UpdateIncomeAsync(int userId, int incomeId, int amount, int categoryId, string desc, DateOnly date)
+        public async Task UpdateIncomeAsync(int userId, int incomeId, EditViewModel viewModel)
         {
             _logger.LogInformation("Inicio de UpdateIncomeAsync. UserId: {UserId}. IncomeId: {IncomeId}", userId, incomeId);
 
             try
             {
-                ValidateIncomeInput(amount, categoryId, date);
+                ValidateIncomeInput(viewModel.IncomeAmount, viewModel.CategoryId, viewModel.IncomeDate);
 
                 var income = await _incomeRepository.GetIncomeByIdAndUserAsync(incomeId, userId);
                 if (income == null)
@@ -151,18 +151,18 @@ namespace BudgetTracker.Services.Income
 
                 var monthlyTotal = await GetOrCreateMonthlyTotalAsync(income.IncomeDate.Month, income.IncomeDate.Year, userId);
                 monthlyTotal.TotalIncome -= income.IncomeAmount;
-                monthlyTotal.TotalIncome += amount;
+                monthlyTotal.TotalIncome += viewModel.IncomeAmount;
 
-                income.IncomeAmount = amount;
-                income.IncomeDesc = desc;
-                income.IncomeDate = date;
-                income.CategoryId = categoryId;
+                income.IncomeAmount = viewModel.IncomeAmount;
+                income.IncomeDesc = viewModel.IncomeDesc;
+                income.IncomeDate = viewModel.IncomeDate;
+                income.CategoryId = viewModel.CategoryId;
 
                 _monthlyTotalRepository.Update(monthlyTotal);
                 _incomeRepository.Update(income);
                 await _incomeRepository.SaveChangesAsync();
 
-                _logger.LogInformation("UpdateIncomeAsync completado. UserId: {UserId}. IncomeId: {IncomeId}. Amount: {Amount}. CategoryId: {CategoryId}", userId, incomeId, amount, categoryId);
+                _logger.LogInformation("UpdateIncomeAsync completado. UserId: {UserId}. IncomeId: {IncomeId}. Amount: {Amount}. CategoryId: {CategoryId}", userId, incomeId, viewModel.IncomeAmount, viewModel.CategoryId);
             }
             catch (ArgumentException ex)
             {
@@ -197,13 +197,13 @@ namespace BudgetTracker.Services.Income
             await _incomeRepository.SaveChangesAsync();
         }
 
-        private async Task<BudgetTracker.Models.MonthlyTotal> GetOrCreateMonthlyTotalAsync(int month, int year, int userId)
+        private async Task<MonthlyTotalModel> GetOrCreateMonthlyTotalAsync(int month, int year, int userId)
         {
             var monthlyTotal = await _monthlyTotalRepository.GetMonthlyTotalByMonthAndUserAsync(month, year, userId);
 
             if (monthlyTotal == null)
             {
-                monthlyTotal = new BudgetTracker.Models.MonthlyTotal
+                monthlyTotal = new MonthlyTotalModel
                 {
                     MonthlyTotalsYear = year,
                     MonthlyTotalsMonth = month,
@@ -218,7 +218,7 @@ namespace BudgetTracker.Services.Income
             return monthlyTotal;
         }
 
-        private void ValidateIncomeInput(int amount, int categoryId, DateOnly date)
+        private void ValidateIncomeInput(decimal amount, int categoryId, DateOnly date)
         {
             if (date > DateOnly.FromDateTime(DateTime.Now.AddMonths(2)))
             {
