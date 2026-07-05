@@ -115,6 +115,51 @@ namespace BudgetTracker.Services.User
             }
         }
 
+        public async Task<ThemeUpdateResult> UpdateThemeAsync(int userId, bool isDarkTheme)
+        {
+            _logger.LogInformation("Inicio de actualización de tema. UserId: {UserId}, IsDarkTheme: {IsDarkTheme}", userId, isDarkTheme);
+
+            if (userId < 0)
+            {
+                throw new InvalidOperationException("User ID must be a non-negative integer.");
+            }
+
+            UserEntity user = await GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                throw new InvalidOperationException("Usuario no encontrado.");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.Contains("Test"))
+            {
+                _logger.LogInformation("Tema no persistido: usuario con rol Test. UserId: {UserId}", userId);
+                return new ThemeUpdateResult
+                {
+                    SavedToDatabase = false,
+                    IsDarkTheme = isDarkTheme,
+                    Message = "Tema aplicado. Los usuarios de prueba no guardan preferencias en la base de datos."
+                };
+            }
+
+            user.IsDarkTheme = isDarkTheme;
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                _logger.LogWarning("UpdateAsync falló al guardar tema. UserId: {UserId}. Errores: {Errors}", userId, errors);
+                throw new Exception($"No se pudo actualizar el tema: {errors}");
+            }
+
+            _logger.LogInformation("Tema actualizado correctamente. UserId: {UserId}, IsDarkTheme: {IsDarkTheme}", userId, isDarkTheme);
+            return new ThemeUpdateResult
+            {
+                SavedToDatabase = true,
+                IsDarkTheme = isDarkTheme,
+                Message = "Tema guardado correctamente."
+            };
+        }
+
         public async Task ResetPasswordAsync(ResetPasswordViewModel model)
         {
             _logger.LogInformation("Inicio de reset de contraseña desde servicio.");
