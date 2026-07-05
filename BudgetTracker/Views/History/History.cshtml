@@ -78,7 +78,7 @@
                 </button>
             </div>
 
-            <table class="table table-bordered" style="width: 90vw">
+            <table class="table table-bordered history-calendar" style="width: 90vw">
                 <thead>
                     <tr>
                         <th>Lunes</th>
@@ -102,9 +102,9 @@
                                         var dayAsDateOnly = DateOnly.FromDateTime(day.Value);
 
                                         <div class="position-relative text-center">
-                                            <p class="mb-0">@day.Value.Day</p>
+                                            <p class="mb-0 history-day-number">@day.Value.Day</p>
 
-                                            <div class="text-black position-absolute end-0 top-50 translate-middle-y"
+                                            <div class="history-day-action position-absolute end-0 top-50 translate-middle-y"
                                                  style="cursor:pointer;"
                                                  title="Agregar una nueva transacción"
                                                  onclick="createTransaction('@dayAsDateOnly.ToString("yyyy-MM-dd")')">

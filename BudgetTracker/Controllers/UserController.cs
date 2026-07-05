@@ -70,6 +70,7 @@ namespace BudgetTracker.Controllers
                 }
 
                 ViewBag.UserRole = await _userManager.GetRolesAsync(user);
+                ViewBag.IsDarkTheme = user.IsDarkTheme;
 
                 EditViewModel editViewModel = new EditViewModel
                 {
@@ -117,6 +118,39 @@ namespace BudgetTracker.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error inesperado al actualizar usuario. TraceId: {TraceId}", HttpContext.TraceIdentifier);
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateTheme([FromForm] bool isDarkTheme)
+        {
+            _logger.LogInformation("Inicio de actualización de tema. TraceId: {TraceId}", HttpContext.TraceIdentifier);
+
+            try
+            {
+                int userId = await GetUserIDAsync();
+                var result = await _userService.UpdateThemeAsync(userId, isDarkTheme);
+
+                _logger.LogInformation("Tema procesado. UserId: {UserId}, SavedToDatabase: {SavedToDatabase}. TraceId: {TraceId}",
+                    userId, result.SavedToDatabase, HttpContext.TraceIdentifier);
+
+                return Ok(new
+                {
+                    Message = result.Message,
+                    SavedToDatabase = result.SavedToDatabase,
+                    IsDarkTheme = result.IsDarkTheme
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Actualización de tema falló por regla de negocio. TraceId: {TraceId}", HttpContext.TraceIdentifier);
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error inesperado al actualizar tema. TraceId: {TraceId}", HttpContext.TraceIdentifier);
                 return BadRequest(new { Message = ex.Message });
             }
         }

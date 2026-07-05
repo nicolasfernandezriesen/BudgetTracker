@@ -1,25 +1,27 @@
 ﻿document.addEventListener('DOMContentLoaded', function () {
     const editOptions = document.getElementById('editOptions');
-    if (!editOptions) return;
-    
-    editOptions.addEventListener('change', function () {
-        const selectedOption = this.value;
-        const sections = document.querySelectorAll('.edit-section');
-        const submitBtn = document.getElementById('submitBtn');
+    if (editOptions) {
+        editOptions.addEventListener('change', function () {
+            const selectedOption = this.value;
+            const sections = document.querySelectorAll('.edit-section');
+            const submitBtn = document.getElementById('submitBtn');
 
-        // Hide all sections
-        sections.forEach(section => {
-            section.style.display = 'none';
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+
+            if (selectedOption) {
+                document.getElementById(selectedOption + 'Section').style.display = 'block';
+                submitBtn.style.display = 'block';
+            } else if (submitBtn) {
+                submitBtn.style.display = 'none';
+            }
         });
+    }
 
-        // Show the selected section
-        if (selectedOption) {
-            document.getElementById(selectedOption + 'Section').style.display = 'block';
-            submitBtn.style.display = 'block';
-        } else {
-            submitBtn.style.display = 'none';
-        }
-    });
+    if (window.__editPageInit && typeof syncThemeToggle === 'function') {
+        syncThemeToggle(window.__editPageInit.isDarkTheme === true);
+    }
 });
 
 function checkValidData(dataObject) {
@@ -98,3 +100,32 @@ async function sendEditUser() {
         Swal.close();
     }
 };
+
+async function sendThemeUpdate() {
+    const isConfirmed = await showConfirmationAlert('Guardar tema', 'Estas seguro que queres guardar el tema seleccionado?');
+
+    if (!isConfirmed.isConfirmed) {
+        return;
+    }
+
+    const themeSelect = document.getElementById('themeSelect');
+    const isDark = themeSelect.value === 'true';
+    const isTestRole = window.__editPageInit?.isTestRole === true;
+
+    try {
+        const loadingSwal = showLoadingAlert();
+
+        const data = await saveTheme(isDark);
+
+        Swal.close();
+
+        await showSuccessAlert('Tema', data.message || data.Message);
+
+        if (!isTestRole && data.savedToDatabase !== false && data.SavedToDatabase !== false) {
+            window.location.href = '/User';
+        }
+    } catch (error) {
+        Swal.close();
+        await showErrorAlert('Error', error.message);
+    }
+}

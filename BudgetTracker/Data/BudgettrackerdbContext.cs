@@ -156,6 +156,7 @@ public partial class BudgettrackerdbContext : IdentityDbContext<User, IdentityRo
             entity.Property(e => e.LockoutEnd).HasColumnName("lockout_end");
             entity.Property(e => e.LockoutEnabled).HasColumnName("lockout_enabled");
             entity.Property(e => e.AccessFailedCount).HasColumnName("access_failed_count");
+            entity.Property(e => e.IsDarkTheme).HasColumnName("is_dark_theme");
             entity.HasIndex(e => e.Email).IsUnique().HasDatabaseName("user_email");
             entity.HasIndex(e => e.UserName).IsUnique().HasDatabaseName("user_name");
         });

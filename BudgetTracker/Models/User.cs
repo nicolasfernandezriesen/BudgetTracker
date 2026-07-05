@@ -4,6 +4,8 @@ namespace BudgetTracker.Models;
 
 public partial class User : IdentityUser<int>
 {
+    public bool IsDarkTheme { get; set; } = false;
+
     public virtual ICollection<Bill> Bills { get; set; } = new List<Bill>();
 
     public virtual ICollection<Income> Incomes { get; set; } = new List<Income>();

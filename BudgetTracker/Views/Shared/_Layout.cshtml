@@ -1,6 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="es">
 <head>
+    @await Component.InvokeAsync("Theme")
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - BudgetTracker</title>
@@ -11,6 +12,7 @@
     <link rel="stylesheet" href="~/BudgetTracker.styles.css" asp-append-version="true" />
 </head>
 <body>
+    @Html.AntiForgeryToken()
      @Html.Partial("_Header")
     <div class="container-fluid">
         <main role="main" class="pb-3 mx-5">
@@ -27,6 +29,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/theme.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

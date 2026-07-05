@@ -1,5 +1,10 @@
 ﻿@model BudgetTracker.ViewModels.User.EditViewModel
 
+@{
+    var isTestRole = ViewBag.UserRole != null && ((IList<string>)ViewBag.UserRole).Contains("Test");
+    var isDarkTheme = isTestRole ? false : (bool)(ViewBag.IsDarkTheme ?? false);
+}
+
 <div class="d-flex flex-column justify-content-center align-items-center m-5">
 
     <div class="d-flex justify-content-evenly align-items-center p-2" style="max-width: 75%; min-width: 50%;">
@@ -12,61 +17,91 @@
     </div>
     
     <div class="bg-secondary border rounded box-shadow" style="max-width: 75%; min-width: 50%;">
-        <div class="d-flex flex-row justify-content-center align-items-center p-5">
-            <h3 class="mx-5">Configuracion de usuario</h3>
-            @if (!ViewBag.UserRole.Contains("Test"))
-            {
-                <form id="editUserForm" asp-controller="User" asp-action="Edit" method="post">
-                    <div class="p-2">
-                        <label class="pb-1">Elije un campo para editar</label>
-                        <select id="editOptions" class="form-control">
-                            <option value="">-- Click aqui para selecionar una opcion --</option>
-                            <option value="UserName">Nombre de usuario</option>
-                            <option value="Email">Email</option>
-                            <option value="Password">Contraseña</option>
-                        </select>
+        <div class="d-flex flex-row justify-content-center align-items-center p-5 config-section-divider">
+            <h3 class="mx-5 flex-shrink-0 mb-0">Configuracion de usuario</h3>
+            <div class="flex-grow-1">
+                @if (!isTestRole)
+                {
+                    <form id="editUserForm" asp-controller="User" asp-action="Edit" method="post">
+                        <div class="p-2">
+                            <label class="pb-1">Elije un campo para editar</label>
+                            <select id="editOptions" class="form-control">
+                                <option value="">-- Click aqui para selecionar una opcion --</option>
+                                <option value="UserName">Nombre de usuario</option>
+                                <option value="Email">Email</option>
+                                <option value="Password">Contraseña</option>
+                            </select>
 
-                        <div id="UserNameSection" class="edit-section" style="display:none;">
-                            <label class="pt-2 pb-1" asp-for="UserName">Nuevo nombre de usuario</label>
-                            <input id="userName" asp-for="UserName" type="text" class="form-control" />
+                            <div id="UserNameSection" class="edit-section" style="display:none;">
+                                <label class="pt-2 pb-1" asp-for="UserName">Nuevo nombre de usuario</label>
+                                <input id="userName" asp-for="UserName" type="text" class="form-control" />
+                            </div>
+
+                            <div id="EmailSection" class="edit-section" style="display:none;">
+                                <label class="pt-2 pb-1" asp-for="Email">Nuevo email</label>
+                                <input id="userEmail" asp-for="Email" type="email" class="form-control" />
+                            </div>
+
+                            <div id="PasswordSection" class="edit-section" style="display:none;">
+                                <label class="pt-2 pb-1" asp-for="Password">Nueva contraseña</label>
+                                <input id="userPassword" asp-for="Password" type="password" class="form-control" />
+                                <label class="pt-2 pb-1" asp-for="ConfirmPassword">Confirmar nueva contraseña</label>
+                                <input id="userConfirmPassword" asp-for="ConfirmPassword" type="password" class="form-control" />
+                                <label class="pt-2 pb-1" asp-for="OldPassword">Contraseña actual</label>
+                                <input id="userOldPassword" asp-for="OldPassword" type="password" class="form-control" />
+                            </div>
                         </div>
 
-                        <div id="EmailSection" class="edit-section" style="display:none;">
-                            <label class="pt-2 pb-1" asp-for="Email">Nuevo email</label>
-                            <input id="userEmail" asp-for="Email" type="email" class="form-control" />
-                        </div>
+                        <button type="button" class="btn btn-primary" id="submitBtn" onclick="sendEditUser()" style="display:none;">Guardar</button>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-danger text-center" role="alert">
+                        <p>
+                            <strong>
+                                Este es un usuario de prueba, no tiene los permisos para esta seccion.
+                                <br />
+                                Para usar estas funciones cree una cuenta.
+                            </strong>
+                        </p>
 
-                        <div id="PasswordSection" class="edit-section" style="display:none;">
-                            <label class="pt-2 pb-1" asp-for="Password">Nueva contraseña</label>
-                            <input id="userPassword" asp-for="Password" type="password" class="form-control" />
-                            <label class="pt-2 pb-1" asp-for="ConfirmPassword">Confirmar nueva contraseña</label>
-                            <input id="userConfirmPassword" asp-for="ConfirmPassword" type="password" class="form-control" />
-                            <label class="pt-2 pb-1" asp-for="OldPassword">Contraseña actual</label>
-                            <input id="userOldPassword" asp-for="OldPassword" type="password" class="form-control" />
-                        </div>
+                        <a asp-controller="Home" asp-action="Create" class="btn btn-primary">Crear usuario</a>
                     </div>
+                }
+            </div>
+        </div>
 
-                    <button type="button" class="btn btn-primary" id="submitBtn" onclick="sendEditUser()">Guardar</button>
-                </form>
-            }
-            else
-            {
-                <div class="alert alert-danger text-center" role="alert">
-                    <p>
-                        <strong>
-                            Este es un usuario de prueba, no tiene los permisos para esta seccion.
-                            <br />
-                            Para usar estas funciones cree una cuenta.
-                        </strong>
-                    </p>
-
-                    <a asp-controller="Home" asp-action="Create" class="btn btn-primary">Crear usuario</a>
+        <div class="d-flex flex-row justify-content-center align-items-center p-5">
+            <h3 class="mx-5 flex-shrink-0 mb-0">Tema</h3>
+            <div class="flex-grow-1">
+                <div class="p-2">
+                    <label class="pb-1" for="themeSelect">Modo de tema</label>
+                    <select id="themeSelect" class="form-control">
+                        @if (isDarkTheme)
+                        {
+                            <option value="false">Claro</option>
+                            <option value="true" selected>Oscuro</option>
+                        }
+                        else
+                        {
+                            <option value="false" selected>Claro</option>
+                            <option value="true">Oscuro</option>
+                        }
+                    </select>
                 </div>
-            }
+                <button type="button" class="btn btn-primary" id="saveThemeBtn" onclick="sendThemeUpdate()">Guardar tema</button>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
+    <script>
+        window.__editPageInit = {
+            isTestRole: @Json.Serialize(isTestRole),
+            isDarkTheme: @Json.Serialize(isDarkTheme)
+        };
+    </script>
     <script src="~/js/User/Edit.js" asp-append-version="true"></script>
 }

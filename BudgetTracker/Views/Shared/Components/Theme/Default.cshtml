@@ -1,0 +1,12 @@
+@model BudgetTracker.ViewModels.Shared.ThemeViewModel
+@{
+    var theme = Model.IsDarkTheme ? "dark" : "light";
+}
+<script>
+    document.documentElement.setAttribute('data-theme', '@theme');
+    window.__themeInit = {
+        isDarkFromServer: @Json.Serialize(Model.IsDarkTheme),
+        isTestRole: @Json.Serialize(Model.IsTestRole),
+        isAuthenticated: @Json.Serialize(Model.IsAuthenticated)
+    };
+</script>

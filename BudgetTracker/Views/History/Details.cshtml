@@ -73,7 +73,7 @@
                     else
                     {
                         <tr>
-                            <td class="text-black" colspan="5">No hay entradas para este mes.</td>
+                            <td colspan="5">No hay entradas para este mes.</td>
                         </tr>
                     }
                 </tbody>
@@ -81,7 +81,7 @@
 
             <div class="d-flex flex-row justify-content-between ps-4" style="width: 27vw;">
                 <div class="d-flex flex-column align-items-center" style="width: 12.5vw;">
-                    <p class="text-center text-black mb-0 pb-0 border-bottom-0 border-top border-start border-end" style="width: 100%;">
+                    <p class="text-center mb-0 pb-0 border-bottom-0 border-top border-start border-end" style="width: 100%;">
                         <strong>Ingresos</strong>
                     </p>
                     <table class="table table-bordered text-center" style="width: 100%;">
@@ -105,12 +105,12 @@
                             else
                             {
                                 <tr>
-                                    <td class="text-black" colspan="2">No hay ingresos para este mes.</td>
+                                    <td colspan="2">No hay ingresos para este mes.</td>
                                 </tr>
                             }
                         </tbody>
                     </table>
-                    <p class="text-center text-black mb-0 pb-0 border-bottom-0 border-top border-start border-end pt-1" style="width: 100%;">
+                    <p class="text-center mb-0 pb-0 border-bottom-0 border-top border-start border-end pt-1" style="width: 100%;">
                         <strong>Gastos</strong>
                     </p>
                     <table class="table table-bordered text-center" style="width: 100%;">
@@ -134,7 +134,7 @@
                             else
                             {
                                 <tr>
-                                    <td class="text-black" colspan="2">No hay gastos para este mes.</td>
+                                    <td colspan="2">No hay gastos para este mes.</td>
                                 </tr>
                             }
                         </tbody>
@@ -172,6 +172,7 @@
     
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+        const legendColor = document.documentElement.dataset.theme === 'dark' ? '#e9ecef' : '#212529';
         
         const canvasIngresos = document.getElementById('chartIngresos');
         if (canvasIngresos) {
@@ -194,7 +195,7 @@
                             position: 'bottom',
                             maxHeight: 60,
                             labels: {
-                                color: 'black',
+                                color: legendColor,
                                 font: {
                                     size: 18,
                                     weight: 'bold'
@@ -238,7 +239,7 @@
                             position: 'bottom',
                             maxHeight: 60,
                             labels: {
-                                color: 'black',
+                                color: legendColor,
                                 font: {
                                     size: 18,
                                     weight: 'bold'
