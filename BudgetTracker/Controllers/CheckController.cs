@@ -26,18 +26,26 @@ namespace BudgetTracker.Controllers
             try
             {
                 var connection = _context.Database.GetDbConnection();
-                if (connection.State != ConnectionState.Open)
+                var shouldClose = connection.State != ConnectionState.Open;
+                if (shouldClose)
                     await connection.OpenAsync();
 
-                await using var command = connection.CreateCommand();
-                command.CommandText = "SELECT 1";
-                var result = await command.ExecuteScalarAsync();
+                try
+                {
+                    await using var command = connection.CreateCommand();
+                    command.CommandText = "SELECT 1";
+                    var result = await command.ExecuteScalarAsync();
 
-                if (result is null)
-                    return ServerWasntReached();
+                    if (result is null)
+                        return ServerWasntReached();
 
-                return Content("OK");
-            }
+                    return Content("OK");
+                }
+                finally
+                {
+                    if (shouldClose)
+                        await connection.CloseAsync();
+                }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Check de base de datos fallido. TraceId: {TraceId}", HttpContext.TraceIdentifier);
