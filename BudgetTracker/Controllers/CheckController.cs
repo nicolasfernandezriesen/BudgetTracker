@@ -46,6 +46,7 @@ namespace BudgetTracker.Controllers
                     if (shouldClose)
                         await connection.CloseAsync();
                 }
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Check de base de datos fallido. TraceId: {TraceId}", HttpContext.TraceIdentifier);
