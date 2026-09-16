@@ -50,7 +50,7 @@ namespace BudgetTracker.Controllers
             return new ContentResult
             {
                 StatusCode = StatusCodes.Status500InternalServerError,
-                Content = "server wasnt reached",
+                Content = "server wasn't reached",
                 ContentType = "text/plain"
             };
         }
