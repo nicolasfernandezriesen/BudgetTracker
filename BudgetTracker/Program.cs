@@ -181,13 +181,18 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-using (var scope = app.Services.CreateScope())
+try
 {
+    using var scope = app.Services.CreateScope();
     var recurringJobs = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
     recurringJobs.AddOrUpdate<DbCheckJob>(
         DbCheckJob.JobId,
         job => job.ExecuteAsync(),
         DbCheckJob.CronExpression);
+}
+catch (Exception ex)
+{
+    app.Logger.LogError(ex, "Failed to register Hangfire recurring job {JobId}", DbCheckJob.JobId);
 }
 
 app.Run();
