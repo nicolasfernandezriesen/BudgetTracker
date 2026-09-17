@@ -1,6 +1,4 @@
 using BudgetTracker.Data;
-using BudgetTracker.Hangfire;
-using BudgetTracker.Jobs;
 using BudgetTracker.Models;
 using BudgetTracker.Repositories.BillRepository;
 using BudgetTracker.Repositories.CategoryRepository;
@@ -13,9 +11,6 @@ using BudgetTracker.Services.EmailSender;
 using BudgetTracker.Services.History;
 using BudgetTracker.Services.Income;
 using BudgetTracker.Services.User;
-using Hangfire;
-using Hangfire.Dashboard;
-using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -132,19 +127,6 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IHistoryService, HistoryService>();
 
-builder.Services.AddHangfire(configuration => configuration
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(connectionString)));
-builder.Services.AddHangfireServer();
-builder.Services.AddScoped<DbCheckJob>();
-builder.Services.AddHttpClient(nameof(DbCheckJob))
-    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-    {
-        ServerCertificateCustomValidationCallback = DbCheckJob.AllowLoopbackCertificate
-    });
-
 // Set the default culture
 var defaultCulture = new CultureInfo("es-AR");
 var localizationOptions = new RequestLocalizationOptions
@@ -172,27 +154,8 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapHangfireDashboard("/hangfire", new DashboardOptions
-{
-    Authorization = new[] { new LocalhostDashboardAuthorizationFilter() }
-});
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
-try
-{
-    using var scope = app.Services.CreateScope();
-    var recurringJobs = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
-    recurringJobs.AddOrUpdate<DbCheckJob>(
-        DbCheckJob.JobId,
-        job => job.ExecuteAsync(),
-        DbCheckJob.CronExpression);
-}
-catch (Exception ex)
-{
-    app.Logger.LogError(ex, "Failed to register Hangfire recurring job {JobId}", DbCheckJob.JobId);
-}
 
 app.Run();
