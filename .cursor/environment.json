@@ -1,0 +1,12 @@
+{
+  "name": "BudgetTracker",
+  "install": "bash .cursor/install.sh",
+  "start": "bash .cursor/start.sh",
+  "terminals": [
+    {
+      "name": "app",
+      "command": "cd BudgetTracker && ConnectionStrings__DefaultConnection='Host=localhost;Port=5432;Database=budgettracker;Username=budget;Password=budget' ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS='http://0.0.0.0:5036' dotnet run -c Release --no-build --no-launch-profile"
+    }
+  ],
+  "ports": [5036]
+}
