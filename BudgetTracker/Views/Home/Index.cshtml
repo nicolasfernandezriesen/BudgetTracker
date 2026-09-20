@@ -11,17 +11,17 @@
     }
 }
 
-<div class="d-flex justify-content-center align-items-center" style="height: 50vh;">
-    <div class="border rounded box-shadow p-4 bg-secondary">
+<div class="d-flex justify-content-center align-items-center bt-viewport-center" style="height: 50vh;">
+    <div class="border rounded box-shadow p-4 bg-secondary bt-auth-panel">
         <form asp-controller="Home" asp-action="Create" method="get">
             <div class="form-group">
-                <button type="submit" class="btn-home btn-primary btn-lg mb-3 mx-4" style="width: 12vh;">Crear Usuario</button>
+                <button type="submit" class="btn-home btn-primary btn-lg mb-3 btn-home-landing">Crear Usuario</button>
             </div>
         </form>
 
         <form asp-controller="Home" asp-action="Login" method="get">
             <div class="form-group">
-                <button type="submit" class="btn-home btn-primary btn-lg mx-4" style="width: 12vh;">Iniciar Sesion</button>
+                <button type="submit" class="btn-home btn-primary btn-lg btn-home-landing">Iniciar Sesion</button>
             </div>
         </form>
     </div>

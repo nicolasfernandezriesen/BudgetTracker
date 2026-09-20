@@ -1,12 +1,12 @@
 ﻿@using Microsoft.AspNetCore.Http;
 
 <div class="p-4 text-light text-center">
-    <h1> Bienvenido @User.Identity.Name. Que vamos a hacer?</h1>
+    <h1 style="font-size: clamp(1.25rem, 4vw, 2rem);">Bienvenido @User.Identity.Name. Que vamos a hacer?</h1>
 </div>
 
 
-<div class="d-flex flex-row justify-content-center align-items-center pt-5">
-    <div class="mx-4">
+<div class="bt-home-actions">
+    <div>
         <form asp-controller="History" class="container" asp-action="GetBillIncomeAndMonthlyTotal" method="get">
             <input type="hidden" name="month" value="@DateTime.Now.Month" />
             <input type="hidden" name="year" value="@DateTime.Now.Year" />
@@ -15,21 +15,21 @@
             </button>
         </form>
     </div>
-    <div class="mx-4">
+    <div>
         <form asp-controller="Bill" class="container" asp-action="Create" method="get">
             <button type="submit" class="btn btn-primary">
                 <h4>NUEVO GASTO</h4>
             </button>
         </form>
     </div>
-    <div class="mx-4">
+    <div>
         <form asp-controller="Income" class="container" asp-action="Create" method="get">
             <button type="submit" class="btn btn-primary">
                 <h4>NUEVO INGRESO</h4>
             </button>
         </form>
     </div>
-    <div class="mx-4">
+    <div>
         <form asp-controller="User" class="container" asp-action="Edit" method="get">
             <button type="submit" class="btn btn-primary">
                 <h4>CONFIGURACION</h4>

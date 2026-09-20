@@ -5,21 +5,21 @@
     var isDarkTheme = isTestRole ? false : (bool)(ViewBag.IsDarkTheme ?? false);
 }
 
-<div class="d-flex flex-column justify-content-center align-items-center m-5">
+<div class="d-flex flex-column justify-content-center align-items-center my-3 my-md-5 px-2">
 
-    <div class="d-flex justify-content-evenly align-items-center p-2" style="max-width: 75%; min-width: 50%;">
+    <div class="bt-page-title">
         <a asp-controller="User" asp-action="Index" class="btn text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" width="1.1vw" height="1.1vw" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-left-circle-fill bt-icon" viewBox="0 0 16 16">
                 <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z" />
             </svg>
         </a>
         <h1>Configuracion</h1>
     </div>
     
-    <div class="bg-secondary border rounded box-shadow" style="max-width: 75%; min-width: 50%;">
-        <div class="d-flex flex-row justify-content-center align-items-center p-5 config-section-divider">
-            <h3 class="mx-5 flex-shrink-0 mb-0">Configuracion de usuario</h3>
-            <div class="flex-grow-1">
+    <div class="bg-secondary border rounded box-shadow bt-panel w-100">
+        <div class="bt-config-section config-section-divider">
+            <h3>Configuracion de usuario</h3>
+            <div class="flex-grow-1 w-100">
                 @if (!isTestRole)
                 {
                     <form id="editUserForm" asp-controller="User" asp-action="Edit" method="post">
@@ -72,9 +72,9 @@
             </div>
         </div>
 
-        <div class="d-flex flex-row justify-content-center align-items-center p-5">
-            <h3 class="mx-5 flex-shrink-0 mb-0">Tema</h3>
-            <div class="flex-grow-1">
+        <div class="bt-config-section">
+            <h3>Tema</h3>
+            <div class="flex-grow-1 w-100">
                 <div class="p-2">
                     <label class="pb-1" for="themeSelect">Modo de tema</label>
                     <select id="themeSelect" class="form-control">
