@@ -1,5 +1,6 @@
 html {
-  font-size: 0.8vmax;
+  /* Evita tipografía minúscula en móvil (0.8vmax ~6–7px en portrait) */
+  font-size: clamp(14px, 0.8vmax, 16px);
   --bt-body-bg: #495057;
   --bt-surface-bg: #6c757d;
   --bt-navbar-bg: #6c757d;
@@ -186,8 +187,355 @@ html[data-theme="light"] .alert-danger {
 
 .from-create-user {
     height: auto;
-    width: 700px;
-    font-size: 1vmax;
+    width: 100%;
+    max-width: 700px;
+    font-size: 1rem;
+}
+
+/* Paneles y formularios reutilizables */
+.bt-panel {
+    width: 100%;
+    max-width: 700px;
+    box-sizing: border-box;
+}
+
+.bt-panel-wide {
+    width: 100%;
+    max-width: 90vw;
+    box-sizing: border-box;
+}
+
+.bt-auth-panel {
+    width: 100%;
+    max-width: 520px;
+    box-sizing: border-box;
+}
+
+.bt-home-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding-top: 2rem;
+}
+
+.bt-home-actions > div {
+    margin: 0 !important;
+    flex: 1 1 10rem;
+    max-width: 14rem;
+}
+
+.bt-home-actions .btn {
+    width: 100%;
+    white-space: normal;
+    min-height: 2.75rem;
+    padding: 0.75rem 1rem;
+}
+
+.bt-home-actions .btn h4 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.btn-home-landing {
+    width: 100%;
+    min-width: 12rem;
+    min-height: 2.75rem;
+}
+
+.bt-page-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    text-align: center;
+    width: 100%;
+    max-width: 100%;
+    padding: 0.5rem;
+}
+
+.bt-page-title h1 {
+    font-size: clamp(1.25rem, 4vw, 2rem);
+    margin: 0;
+    word-break: break-word;
+}
+
+.bt-icon {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    flex-shrink: 0;
+}
+
+.bt-icon-lg {
+    width: 2rem !important;
+    height: 2rem !important;
+}
+
+.bt-form-narrow-input {
+    max-width: 12rem;
+    width: 100%;
+    display: inline-block;
+}
+
+.bt-category-wrap {
+    max-width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.bt-guest-banner {
+    white-space: normal;
+    text-align: center;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.bt-config-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 2rem;
+}
+
+.bt-config-section h3 {
+    flex-shrink: 0;
+    margin: 0 1rem 0 0;
+}
+
+.bt-history-totals {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1rem;
+    text-align: center;
+}
+
+.bt-history-nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.bt-history-nav h2 {
+    margin: 0;
+    text-align: center;
+    font-size: clamp(1.1rem, 3.5vw, 1.75rem);
+}
+
+.bt-details-layout {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    max-width: 85vw;
+    gap: 1rem;
+}
+
+.bt-details-main-table {
+    width: 100%;
+    max-width: 58vw;
+}
+
+.bt-details-side {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    max-width: 27vw;
+}
+
+.bt-table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.bt-table-scroll > .table {
+    margin-bottom: 0;
+}
+
+main.bt-main {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+    main.bt-main {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}
+
+@media (min-width: 992px) {
+    main.bt-main {
+        padding-left: 3rem;
+        padding-right: 3rem;
+    }
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 767.98px) {
+    body {
+        margin-bottom: 4.5rem;
+        overflow-x: hidden;
+    }
+
+    .from-create-user,
+    .bt-panel,
+    .bt-panel-wide,
+    .bt-auth-panel {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .btn-home-landing {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .bt-home-actions {
+        flex-direction: column;
+        align-items: stretch;
+        padding-top: 1rem;
+        gap: 0.75rem;
+    }
+
+    .bt-home-actions > div {
+        max-width: none;
+        flex: 1 1 auto;
+        width: 100%;
+    }
+
+    .bt-config-section {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1.25rem;
+    }
+
+    .bt-config-section h3 {
+        margin: 0 0 0.75rem 0;
+        text-align: center;
+    }
+
+    .bt-category-wrap {
+        max-width: 100%;
+    }
+
+    .bt-form-narrow-input {
+        max-width: 100%;
+        display: block;
+    }
+
+    .bt-history-totals {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .bt-history-nav {
+        gap: 0.5rem;
+    }
+
+    .bt-details-layout,
+    .bt-details-side {
+        flex-direction: column;
+        max-width: 100%;
+    }
+
+    .bt-details-main-table {
+        max-width: 100%;
+    }
+
+    .history-calendar {
+        width: 100% !important;
+        font-size: 0.75rem;
+    }
+
+    .history-calendar th,
+    .history-calendar td {
+        width: auto !important;
+        padding: 0.25rem !important;
+        vertical-align: top;
+    }
+
+    .history-calendar .history-day-action svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .history-calendar ul {
+        padding-left: 0.75rem;
+        margin-bottom: 0;
+    }
+
+    .history-calendar .btn-calendar {
+        font-size: 0.65rem;
+        white-space: normal;
+        text-align: left;
+    }
+
+    /* Formularios Bootstrap: apilar labels e inputs */
+    .from-create-user .row > [class*="col-"],
+    .bt-auth-panel .row > [class*="col-"] {
+        width: 100%;
+        max-width: 100%;
+        flex: 0 0 100%;
+    }
+
+    .from-create-user .container,
+    .bt-auth-panel .container {
+        padding-left: 0;
+        padding-right: 0;
+        max-width: 100%;
+    }
+
+    /* Tablas de detalle día: scroll horizontal si hace falta */
+    .bt-table-scroll table th,
+    .bt-table-scroll table td {
+        width: auto !important;
+        min-width: 4.5rem;
+    }
+
+    .bt-table-scroll table th:nth-child(3),
+    .bt-table-scroll table td:nth-child(3) {
+        min-width: 10rem;
+    }
+
+    .footer {
+        white-space: normal;
+        line-height: 1.4;
+        padding: 0.75rem 1rem;
+        text-align: center;
+        height: auto;
+    }
+
+    .footer .container {
+        max-width: 100%;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .navbar .navbar-brand.bt-guest-banner {
+        font-size: 0.85rem;
+        max-width: 100%;
+    }
+
+    /* Evitar altura fija que deja demasiado vacío en móvil */
+    .bt-viewport-center {
+        height: auto !important;
+        min-height: auto;
+        padding: 1.5rem 0;
+    }
 }
 
 .btn-calendar {

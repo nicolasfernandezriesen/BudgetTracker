@@ -1,10 +1,10 @@
 ﻿@model BudgetTracker.ViewModels.User.LoginViewModel
 
-<div class="d-flex flex-column justify-content-center align-items-center" style="height: 50vh;">
+<div class="d-flex flex-column justify-content-center align-items-center bt-viewport-center" style="height: 50vh;">
 
-    <h1 class="m-4">Inicio de sesion</h1>
+    <h1 class="m-4 text-center">Inicio de sesion</h1>
 
-    <div class="border rounded box-shadow p-4 pb-0 bg-secondary" style="max-width: 75%;">
+    <div class="border rounded box-shadow p-4 pb-0 bg-secondary bt-auth-panel">
         <div class="from-create-user">
             <form id="loginUserForm" asp-controller="Home" class="container" asp-action="Login" method="post">
                 @Html.AntiForgeryToken()
@@ -23,28 +23,29 @@
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-sm-5 text-start">
+                <div class="row g-2">
+                    <div class="col-auto text-start">
                         <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="1.1vw" height="1.1vw" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-left-circle-fill bt-icon" viewBox="0 0 16 16">
                                 <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z" />
                             </svg>
                         </a>
                     </div>
-                    <div class="col-sm-7 text-start">
+                    <div class="col text-start">
                         <button type="button" class="btn btn-primary" onclick="LoginUser()">Iniciar Sesion</button>
                     </div>
                 </div>
             </form>
             <form asp-controller="Home" asp-action="ForgotPassword" method="get" class="container">
                 <div class="row">
-                    <div class="col-sm-12 text-end">
+                    <div class="col-12 text-end">
                         <button type="submit" class="btn btn-link text-black">¿Olvidaste tu contraseña?</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
+</div>
 
 @section Scripts {
         <script src="~/js/Home/Login.js" asp-append-version="true"></script>

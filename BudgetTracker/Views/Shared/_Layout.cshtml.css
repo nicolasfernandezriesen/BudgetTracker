@@ -46,3 +46,12 @@ button.accept-policy {
   white-space: nowrap;
   line-height: 60px;
 }
+
+@media (max-width: 767.98px) {
+  .footer {
+    white-space: normal;
+    line-height: 1.4;
+    padding: 0.75rem 0;
+    height: auto;
+  }
+}

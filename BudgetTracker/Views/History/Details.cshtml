@@ -11,41 +11,42 @@
     var datosGastos = JsonSerializer.Serialize(Model.CategoriesBills?.Select(c => c.TotalBill) ?? Array.Empty<decimal>());
 }
 
-<div class="d-flex flex-column justify-content-center align-items-center">
-    <div class="d-flex flex-row justify-content-center align-items-center p-2">
-        <a asp-controller="History" asp-action="GetBillIncomeAndMonthlyTotal" asp-route-month="@Model.Month" asp-route-year="@Model.Year" class="btn text-white me-3">
-            <svg xmlns="http://www.w3.org/2000/svg" width="1.1vw" height="1.1vw" fill="currentColor" class="bi bi-arrow-left-circle-fill" viewBox="0 0 16 16">
+<div class="d-flex flex-column justify-content-center align-items-center px-2">
+    <div class="bt-page-title">
+        <a asp-controller="History" asp-action="GetBillIncomeAndMonthlyTotal" asp-route-month="@Model.Month" asp-route-year="@Model.Year" class="btn text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-arrow-left-circle-fill bt-icon" viewBox="0 0 16 16">
                 <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0m3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z" />
             </svg>
         </a>
         <h1>Detalles del mes @(char.ToUpper(mes[0]) + mes.Substring(1)) - @Model.Year.ToString("D4")</h1>
     </div>
 
-    <div class="d-flex flex-column justify-content-center align-items-center border rounded box-shadow p-4 bg-secondary center">
-        <div class="d-flex flex-column justify-content-center align-items-center pt-2 pb-2">
-            <div class="d-flex flex-row justify-content-center align-items-center">
-                <h2>
+    <div class="d-flex flex-column justify-content-center align-items-center border rounded box-shadow p-3 p-md-4 bg-secondary center w-100 bt-panel-wide">
+        <div class="d-flex flex-column justify-content-center align-items-center pt-2 pb-2 text-center">
+            <div>
+                <h2 style="font-size: clamp(1rem, 3.5vw, 1.75rem);">
                     Total de ingresos: @(Model.TotalIncome.ToString("C")) -
                     Total de gastos: @(Model.TotalBill.ToString("C"))
                 </h2>
             </div>
 
             <div>
-                <h2>
+                <h2 style="font-size: clamp(1rem, 3.5vw, 1.75rem);">
                     Total del mes: @((Model.TotalIncome - Model.TotalBill).ToString("C", new System.Globalization.CultureInfo("es-AR")))
                 </h2>
             </div>
         </div>
 
-        <div class="d-flex flex-row" style="width: 85vw;">
-            <table class="table table-bordered text-center" style="width: 58vw;">
+        <div class="bt-details-layout">
+            <div class="bt-table-scroll bt-details-main-table">
+            <table class="table table-bordered text-center" style="width: 100%;">
                 <thead>
                     <tr>
-                        <th style="width: 6vw">Fecha</th>
-                        <th style="width: 40vw">Descripción</th>
-                        <th style="width: 5vw">Tipo</th>
-                        <th style="width: 10vw">Categoria</th>
-                        <th style="width: 10vw">Monto</th>
+                        <th>Fecha</th>
+                        <th>Descripción</th>
+                        <th>Tipo</th>
+                        <th>Categoria</th>
+                        <th>Monto</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -60,11 +61,11 @@
                                 @foreach (var transaction in Model.Transactions.Where(t => t.Date == currentDate))
                                 {
                                     <tr>
-                                        <td style="width: 6vw">@transaction.Date.ToString("dd/MM/yyyy")</td>
-                                        <td style="width: 40vw">@transaction.Description</td>
-                                        <td style="width: 5vw">@transaction.Type</td>
-                                        <td style="width: 10vw">@transaction.Category</td>
-                                        <td style="width: 10vw">@transaction.Amount.ToString("C")</td>
+                                        <td>@transaction.Date.ToString("dd/MM/yyyy")</td>
+                                        <td>@transaction.Description</td>
+                                        <td>@transaction.Type</td>
+                                        <td>@transaction.Category</td>
+                                        <td>@transaction.Amount.ToString("C")</td>
                                     </tr>
                                 }
                             }
@@ -78,12 +79,14 @@
                     }
                 </tbody>
             </table>
+            </div>
 
-            <div class="d-flex flex-row justify-content-between ps-4" style="width: 27vw;">
-                <div class="d-flex flex-column align-items-center" style="width: 12.5vw;">
+            <div class="bt-details-side">
+                <div class="d-flex flex-column align-items-center w-100" style="max-width: 100%;">
                     <p class="text-center mb-0 pb-0 border-bottom-0 border-top border-start border-end" style="width: 100%;">
                         <strong>Ingresos</strong>
                     </p>
+                    <div class="bt-table-scroll w-100">
                     <table class="table table-bordered text-center" style="width: 100%;">
                         <thead>
                             <tr>
@@ -110,9 +113,11 @@
                             }
                         </tbody>
                     </table>
+                    </div>
                     <p class="text-center mb-0 pb-0 border-bottom-0 border-top border-start border-end pt-1" style="width: 100%;">
                         <strong>Gastos</strong>
                     </p>
+                    <div class="bt-table-scroll w-100">
                     <table class="table table-bordered text-center" style="width: 100%;">
                         <thead>
                             <tr>
@@ -139,13 +144,14 @@
                             }
                         </tbody>
                     </table>
+                    </div>
                 </div>
-                <div class="d-flex flex-column align-items-center mb-3" style="height: 32vh; width: 12.5vw;">
+                <div class="d-flex flex-column align-items-center mb-3 w-100" style="min-height: 12rem;">
                     @if (Model.CategoriesIncomes != null && Model.CategoriesIncomes.Any())
                     {
-                        <div class="d-flex flex-column align-items-center mb-2" style="height: 16vh; width: 100%; max-width: 12.5vw;">
+                        <div class="d-flex flex-column align-items-center mb-2 w-100" style="height: 12rem; max-width: 16rem;">
                             <p class="mb-0"><strong>Distribucion de Ingreso</strong></p>
-                            <div style="position: relative; width: 100%; height: 16vh;">
+                            <div style="position: relative; width: 100%; height: 10rem;">
                                 <canvas id="chartIngresos" style="width: 100%; height: 100%;"></canvas>
                             </div>
                         </div>
@@ -153,9 +159,9 @@
 
                     @if (Model.CategoriesBills != null && Model.CategoriesBills.Any())
                     {
-                        <div class="d-flex flex-column align-items-center pt-2" style="height: 16vh; width: 100%; max-width: 12.5vw;">
+                        <div class="d-flex flex-column align-items-center pt-2 w-100" style="height: 12rem; max-width: 16rem;">
                             <p class="mb-0"><strong>Distribucion de Gastos</strong></p>
-                            <div style="position: relative; width: 100%; height: 16vh;">
+                            <div style="position: relative; width: 100%; height: 10rem;">
                                 <canvas id="chartGastos" style="width: 100%; height: 100%;"></canvas>
                             </div>
                         </div>
